@@ -1,0 +1,286 @@
+/* Fixed HUD: replaces the per-slide kicker, logo, footer and page number.
+   Sized in viewport units of a 1920×1080 reference so it scales like the deck. */
+
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  font-family: var(--font);
+  color: var(--fg);
+  transition: color 600ms ease;
+  --u: min(calc(100vw / 1920), calc(100vh / 1080));
+  --u: min(calc(100vw / 1920), calc(100dvh / 1080));
+  /* Phones in landscape: keep the HUD clear of the notch and the home bar */
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+/* Top-left block: Act › part, the act bar, the seven concerns */
+.hud-nav {
+  position: absolute;
+  top: calc(40 * var(--u));
+  left: calc(64 * var(--u) + var(--safe-l));
+  display: flex;
+  flex-direction: column;
+  gap: calc(14 * var(--u));
+  width: max-content;
+  /* A light veil keeps the block readable over close-ups of the engine; leader names pass above it */
+  margin: calc(-12 * var(--u)) 0 0 calc(-16 * var(--u));
+  padding: calc(12 * var(--u)) calc(16 * var(--u));
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: opacity 500ms ease;
+}
+
+body[data-hud="bare"] .hud-nav {
+  opacity: 0;
+}
+
+/* Before the questions are asked, the block holds only the breadcrumb and the act bar */
+body[data-hud="crumb"] .hud-checklist {
+  display: none;
+}
+
+.hud-crumb {
+  display: flex;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  font-size: max(calc(13 * var(--fl)), calc(22 * var(--u)));
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.hud-crumb::before {
+  content: "";
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  border-radius: 50%;
+  background: var(--grad-red);
+  flex: none;
+}
+
+.crumb-part:not(:empty)::before {
+  content: "›";
+  margin-right: calc(14 * var(--u));
+  color: var(--fg-muted);
+}
+
+.crumb-part {
+  color: var(--fg-muted);
+}
+
+/* One equal segment per section: done sections full, the current one filling up */
+.hud-acts {
+  display: flex;
+  gap: calc(6 * var(--u));
+  width: calc(420 * var(--u));
+  min-width: 220px;
+  margin: 0 0 0 calc(36 * var(--u));
+  padding: 0;
+  list-style: none;
+}
+
+.hud-acts li {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(30 30 30 / 0.14);
+  overflow: hidden;
+}
+
+.hud-acts span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--grad-red);
+  transition: width 600ms ease;
+}
+
+.hud-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  margin: calc(4 * var(--u)) 0 0 calc(36 * var(--u));
+  padding: 0;
+  list-style: none;
+  font-size: max(calc(12 * var(--fl)), calc(18 * var(--u)));
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.hud-checklist li {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  transition: color 400ms ease;
+}
+
+.hud-checklist li::before {
+  content: "";
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fg-muted);
+  box-sizing: border-box;
+  transition: background 400ms ease, border-color 400ms ease, transform 400ms ease;
+}
+
+/* Met earlier in the talk: a soft filled dot */
+.hud-checklist li.is-done {
+  color: var(--fg);
+}
+
+.hud-checklist li.is-done::before {
+  border-color: transparent;
+  background: rgb(238 34 56 / 0.35);
+}
+
+/* What this step speaks to: red dot, bold */
+.hud-checklist li.is-now {
+  color: var(--dark);
+  font-weight: 800;
+}
+
+.hud-checklist li.is-now::before {
+  border-color: transparent;
+  background: var(--grad-red);
+  animation: tick 900ms ease 1;
+}
+
+@keyframes tick {
+  50% { transform: scale(1.7); }
+}
+
+/* Phones: the questions would cover the engine; the breadcrumb and the bar stay (same query as --fl) */
+@media (pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px) {
+  .hud-checklist {
+    display: none;
+  }
+}
+
+.hud-logo {
+  position: absolute;
+  top: calc(40 * var(--u));
+  right: calc(64 * var(--u) + var(--safe-r));
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+}
+
+.hud-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hud-footer {
+  position: absolute;
+  left: calc(64 * var(--u) + var(--safe-l));
+  right: calc(64 * var(--u) + var(--safe-r));
+  bottom: calc(40 * var(--u) + var(--safe-b));
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: calc(32 * var(--u));
+  font-size: max(calc(10 * var(--fl)), calc(16 * var(--u)));
+  /* Darker than the muted grey (4.5:1 on the pastel), with a halo where engine lines run under it */
+  color: color-mix(in srgb, var(--fg-muted) 70%, var(--fg));
+  text-shadow: 0 0 2px var(--halo), 0 0 4px var(--halo), 0 0 8px var(--halo);
+}
+
+.hud-counter {
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-nav,
+  .hud-acts span,
+  .hud-checklist li,
+  .hud-checklist li::before {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Fallback message when impress.js is not supported */
+.fallback-message {
+  font-family: var(--font);
+  padding: 32px;
+  max-width: 720px;
+}
+
+.impress-supported .fallback-message {
+  display: none;
+}
+
+/* Phone held upright: ask for landscape. Scripts only; the reading version scrolls in portrait. */
+.rotate {
+  display: none;
+}
+
+@media (pointer: coarse) and (orientation: portrait) {
+  html.js .rotate {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 32px;
+    text-align: center;
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--footer-on-dark);
+    background: var(--dark);
+    background: var(--grad-dark);
+  }
+}
+
+.rotate p {
+  margin: 0;
+}
+
+.rotate .rotate-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.rotate svg {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
+  fill: none;
+  stroke: var(--white);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  animation: turn 2.4s ease-in-out infinite;
+}
+
+.rotate svg rect {
+  stroke: var(--accent-on-dark);
+}
+
+@keyframes turn {
+  0%, 25% { transform: rotate(0deg); }
+  50%, 85% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate svg {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}

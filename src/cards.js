@@ -1,0 +1,84 @@
+// Annotation cards, one per stop, in a screen layer: projected from their stop's world anchor, kept inside
+// the viewport and clear of the HUD block. Their sizes are watched rather than read every frame (a card grows
+// when a beat reveals more of it).
+import * as THREE from "three";
+
+const MARGIN = 0.04;
+
+// onResize: called when a card changes size, so the caller can draw again
+export function createCards(container, onResize) {
+  const sizes = new Map();
+  const watch = new ResizeObserver((entries) => {
+    entries.forEach((e) => sizes.set(e.target, [e.target.offsetWidth, e.target.offsetHeight]));
+    onResize();
+  });
+  const cards = [];
+  const p = new THREE.Vector3();
+  let box = null;
+
+  // The notch and rounded corners in landscape: a probe reads env(safe-area-inset-*) as pixels
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;visibility:hidden;padding:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)";
+  document.body.appendChild(probe);
+  const insets = () => {
+    const s = getComputedStyle(probe);
+    return [parseFloat(s.paddingLeft) || 0, parseFloat(s.paddingRight) || 0];
+  };
+
+  function add(stop) {
+    const card = stop.card;
+    if (!card) return;
+    card.classList.add(`card-${stop.data.side || "right"}`);
+    container.appendChild(card);
+    watch.observe(card);
+    cards.push(card);
+  }
+
+  function show(stop) {
+    cards.forEach((card) => card.classList.toggle("is-on", card === stop.card));
+    box = null;
+  }
+
+  // hud: the HUD block's screen rectangle (or null)
+  function place(stop, camera, hud) {
+    const card = stop.card;
+    if (!card) return;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const side = stop.data.side || "right";
+    const [cw, ch] = sizes.get(card) || [card.offsetWidth, card.offsetHeight];
+    let x;
+    let y;
+    if (stop.data.anchor === "screen") {
+      x = side === "left" ? w * 0.07 : w * 0.93 - cw;
+      y = stop.data.dock === "bottom" ? h * 0.88 - ch : (h - ch) / 2;
+    } else {
+      p.copy(stop.anchor).project(camera);
+      const sx = ((p.x + 1) / 2) * w;
+      const sy = ((1 - p.y) / 2) * h;
+      const gap = w * 0.02;
+      x = side === "left" ? sx - cw - gap : side === "center" ? sx - cw / 2 : sx + gap;
+      y = sy - ch / 2;
+    }
+    const [sl, sr] = insets();
+    x = Math.max(Math.max(w * MARGIN, sl + 8), Math.min(Math.min(w * (1 - MARGIN), w - sr - 8) - cw, x));
+    y = Math.max(h * 0.12, Math.min(h * 0.88 - ch, y));
+    // Keep clear of the HUD block: below it if the card fits there, else to its right
+    if (hud && x < hud.x + hud.w && y < hud.y + hud.h) {
+      if (hud.y + hud.h + ch < h * 0.9) y = hud.y + hud.h;
+      else x = hud.x + hud.w;
+    }
+    card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    box = { x, y, w: cw, h: ch };
+  }
+
+  return {
+    add,
+    show,
+    place,
+    // Where the current card was last placed, for the leaders to keep clear of
+    get box() {
+      return box;
+    },
+  };
+}

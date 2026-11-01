@@ -1,0 +1,25 @@
+# OS / editors
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Scratch and local tooling
+tmp/
+scratch/
+node_modules/
+
+# Source material: internal or client-confidential, never commit
+assets/source/*.pdf
+assets/source/*.pptx
+assets/source/*.docx
+sources/
+
+# Screenshots of internal decks used as references
+assets/source/*.png
+
+# Agent skills under Anthropic's proprietary licence: installed locally, not redistributed
+.agents/skills/pdf/
+.agents/skills/pptx/
+.claude/skills/pdf
+.claude/skills/pptx

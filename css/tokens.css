@@ -1,0 +1,86 @@
+/* Brand tokens — docs/brand-guidelines.md §1–2 */
+
+/* Nunito faces live in fonts.css (inlined for file:// use) */
+
+:root {
+  /* Text size floor (px): keeps text readable on small desktop windows. Phones drop it, so the
+     deck scales down as one picture instead of overflowing its cards. */
+  --fl: 1px;
+
+  /* Core palette */
+  --red: #ee2238;
+  --raspberry: #bf1d67;
+  --dark: #1e1e1e;
+  --grey: #747775;
+  --light-grey: #efefef;
+  --rule-grey: #d9d9d9;
+  --white: #ffffff;
+  --accent-on-dark: #ff6b7a;
+  --footer-on-dark: #b7b7b7;
+  --gradient-fallback: #d81f4d;
+
+  /* Signature gradient and section palettes: always 135°, two stops */
+  --grad-red: linear-gradient(135deg, #ee2238 0%, #bf1d67 100%);
+  /* Deck backdrop: the Zenika slide template, pastel and horizontal (an exception to the 135° rule) */
+  --grad-backdrop: linear-gradient(90deg, #fff6f5 6%, #e3e8fc 100%);
+  /* Closing stop: brand dark towards a raspberry-tinted black, never pure #000 */
+  --grad-dark: linear-gradient(135deg, #1e1e1e 0%, #2b1622 100%);
+  --grad-blue: linear-gradient(135deg, #3f86ee 0%, #5a6fe0 100%);
+  --grad-sunset: linear-gradient(135deg, #e8664f 0%, #f0a02c 100%);
+  --grad-violet: linear-gradient(135deg, #8a63e8 0%, #5f78e0 100%);
+
+  /* Domain chips: one colour = one meaning across the deck */
+  --dom-discover-bg: #fdebd0;      --dom-discover-fg: #7a4700;       /* orange: product */
+  --dom-build-bg: #dce9fb;         --dom-build-fg: #1a4a8a;          /* blue: tooling, dev */
+  --dom-platform-bg: #e8e1fb;      --dom-platform-fg: #4527a0;       /* violet: security, control */
+  --dom-contextualise-bg: #fde3e7; --dom-contextualise-fg: #a5122a;  /* red: knowledge */
+  --dom-measure-bg: #d8f3e6;       --dom-measure-fg: #0b6540;        /* green: measurement */
+  --dom-neutral-bg: #ececec;       --dom-neutral-fg: #444444;        /* grey: watch, neutral */
+
+  /* Type */
+  --font: "Nunito", Arial, sans-serif;
+  --fs-hero: 144px;
+  --fs-giant: 260px;
+  --fs-divider-num: 160px;
+  --fs-punch: 88px;
+  --fs-closing: 96px;
+  --fs-h2: 60px;
+  --fs-sub: 32px;
+  --fs-h3: 34px;
+  --fs-body: 28px;
+  --fs-label: 24px;
+
+  /* Shape */
+  --radius: 16px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+
+  /* Theme (surface by default) — switched by body[data-theme] */
+  --bg: var(--white);
+  --fg: var(--dark);
+  --fg-muted: var(--grey);
+  --accent: var(--red);
+  --card-bg: var(--white);
+  --card-border: var(--light-grey);
+  --map-line: var(--rule-grey);
+  --halo: rgba(245, 241, 247, 0.9); /* glow behind HUD text that sits on the engine */
+}
+
+body[data-theme="dark"],
+body[data-theme="blueprint"],
+body[data-theme="core"] {
+  --fg: var(--white);
+  --fg-muted: var(--footer-on-dark);
+  --accent: var(--accent-on-dark);
+  --card-bg: #2a2a2a;
+  --card-border: #3a3a3a;
+  --map-line: #4a4a4a;
+  --halo: rgba(32, 26, 32, 0.9);
+}
+
+body[data-theme="core"] {
+  --accent: var(--white);
+}
+
+@media (pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px) {
+  :root { --fl: 0px; }
+}

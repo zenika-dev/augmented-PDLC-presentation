@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3eef4">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>The Augmented PDLC</title>
+  <!-- Scripts on: the 3D deck. Scripts off (mail previewers): css/fallback.css lays the cards out as a page -->
+  <script>document.documentElement.className = "js";</script>
+  <meta name="description" content="Zenika point of view on AI across the Product Delivery Life Cycle: what's real, what's coming, what to decide.">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/engine.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/fallback.css">
+</head>
+<body data-theme="light">
+
+<header class="nojs-banner">
+  <img src="assets/zenika-monogram.png" alt="Zenika">
+  <p>This is the reading version. Open this file in Chrome or Safari, on a computer or a phone, for the animated deck.</p>
+</header>
+
+<div class="backdrop backdrop-light"></div>
+<div class="backdrop backdrop-dark"></div>
+<div class="backdrop backdrop-core"></div>
+<div class="backdrop backdrop-blueprint"></div>
+
+<div id="stage"></div>
+<div id="cards"></div>
+
+<!--
+  Stops: each one is a camera shot on the engine plus the engine's state. Geometry lives in src/.
+  Camera:   data-shot = hero | hero-right | top-right | nexus | nexus-right | top-wide | nexus-top | telescope | telescope-left | side
+            | exploded | exploded-left | phase:<id> | band:<id> | spine
+  Engine:   data-parts (wheel,nexus,bands: which parts are in place), data-explode 0–1, data-telescope 0–1,
+            data-split <band id>, data-idea <phase id | shape name | run> (run: the Idea travels its track),
+            data-focus <tags>, data-context <tags> (faded only a bit), data-energize <tags> (role lens, red),
+            data-pulse <tags> (a red wave runs out from the core through these parts), data-pulse-lag <tag=units,…>,
+            data-pulse-band <band id> (the wave lights only that band's height), data-idle (wheel and core turn slowly)
+  Labels:   data-labels <label groups> (phases-engraved: names cut into the lobes' rim), data-lead-side left | right (side of every leader name),
+            data-lead-column <0–1> (with a side: names stacked in one column at that screen x),
+            data-lead-drop <0–1> (free names try an elbow at that screen height first),
+            data-lead-at <key=x/y,…> (that name's elbow at those fractions of the screen; gate names are keyed G1–G6),
+            data-lead-at-phone (the same on phones)
+  Beats:    <div class="beat" data-…> inside a stop: a substep overriding focus, context, energize, labels, pulse, hud.
+            Card items marked data-beat="<n>" light up on beat n; items marked data-from="<n>" appear from beat n on.
+  Shot:     a beat may carry its own data-shot (band-high:<id> frames a band and the wheel above it); the camera glides there
+  Card:     data-anchor = phase:<id> | band:<id> | spine | rim:<angle> | nexus | screen, data-side = left | right | center,
+            data-dock="bottom" (screen cards: sit at the bottom instead of mid-height)
+  HUD:      data-section (problem · wheel · nexus · layers · people · measure · napkin: the breadcrumb's pillar), data-crumb (the part on screen),
+            data-hud="bare" (no top-left block) | "crumb" (no checklist), data-source, data-theme="blueprint" (dark backdrop, white lines),
+            data-answers (the questions this step speaks to: feed · govern · harness · secure · identity · tokens · measure)
+  URL:      #<n> = the counter's number, #<n>.<b> = beat b (from 2) of that stop
+  Copy:     docs/outline.md (voiceover). Placeholder lines are marked .todo.
+-->
+<div id="stops">
+
+  <section id="title" class="stop" data-section="problem" data-shot="hero-right" data-idle data-idea="run" data-pulse="nexus,wheel" data-hud="bare" data-anchor="screen" data-side="left">
+    <div class="card card-hero">
+      <h1>The Augmented <em>PDLC</em></h1>
+      <p class="sub">A Systemic Design for AI&#8209;Native Software Factories</p>
+    </div>
+  </section>
+
+  <section id="problem" class="stop" data-section="problem" data-shot="hero-right" data-idle data-idea="run" data-focus="none" data-context="wheel,nexus"
+           data-crumb="Why change" data-hud="crumb" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat"></div>
+    <div class="card card-wide">
+      <p class="card-num">The problem</p>
+      <h2>A Whole&#8209;System <em>Redesign</em></h2>
+      <p class="card-text">AI agents can now write, test and ship code. How should IT delivery change around them?</p>
+      <p class="card-text">People move back to engineering roles: they frame the intent, set the rules and make the calls. Agents take over the craft.</p>
+      <p class="card-text">A tool rollout cannot carry that shift. It takes a whole delivery system: a lifecycle, a shared context, a platform, new roles and new measures.</p>
+      <div class="reveal" data-from="1"><div>
+        <p class="card-kicker">Seven questions to address</p>
+        <ul class="concerns"></ul>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="wheel" class="stop" data-section="wheel" data-shot="top-right" data-parts="wheel" data-labels="phases" data-idea="run"
+           data-crumb="Five phases" data-anchor="screen" data-side="left">
+    <div class="card">
+      <p class="card-num">The wheel</p>
+      <h2>A <em>Six-Phase</em> Product Delivery Life Cycle</h2>
+      <p class="card-desc">Five phases form the loop: Discover, Design, Develop, Deploy, Deepen. Drop, the sixth, hangs outside it and retires what no longer earns its place.</p>
+      <p class="card-desc">Each phase ends with a written output the next one builds on: a spec, tested code, a release record. Six gates pace the cycle: nothing moves on until its gate opens.</p>
+    </div>
+  </section>
+
+  <section id="shapes" class="stop" data-section="wheel" data-shot="top-right" data-parts="wheel" data-labels="phases,shapes" data-idea="run"
+           data-crumb="The Idea's shapes" data-anchor="screen" data-side="left">
+    <div class="card">
+      <p class="card-num">The Idea</p>
+      <h2>One Idea's Journey in <em>Twelve</em> Shapes</h2>
+      <p class="card-desc">It starts as an idea. Design shapes it into a spec. Develop turns the spec into code, builds it and reviews it. Deploy ships it and keeps it running. Deepen observes it in use and analyses the results.</p>
+      <p class="card-desc">What we learn becomes an opportunity, which is the next idea, and the wheel turns again. An idea that has served its time leaves through Drop.</p>
+    </div>
+  </section>
+
+  <section id="gates" class="stop" data-section="wheel" data-shot="top-right" data-parts="wheel" data-labels="gate-names,gate-notes" data-idea="run"
+           data-focus="gates,idea" data-crumb="Gates" data-answers="govern,secure" data-anchor="screen" data-side="left" data-dock="bottom"
+           data-lead-at="G4=0.44/0.4, G5=0.79/0.2, G3=0.63/0.88" data-lead-at-phone="G4=0.37/0.3, G6=0.68/0.12">
+    <div class="card">
+      <p class="card-num">Quality gates</p>
+      <h2>A Gate on <em>Every</em> Passage</h2>
+      <p class="card-desc">Between two phases, the idea stops at a gate. Machines check first: tests, scans, schemas, the criteria the phase promised. Then a named person decides, and the platform records the decision.</p>
+      <p class="card-desc">A gate opens on evidence, never on a claim. Each label shows what its gate checks.</p>
+    </div>
+  </section>
+
+  <section id="registers" class="stop" data-section="nexus" data-shot="nexus-right" data-parts="wheel,nexus" data-context="nexus"
+           data-crumb="Registers" data-answers="feed" data-anchor="screen" data-side="left">
+    <div class="beat" data-focus="register:knowledge" data-labels="register:knowledge"></div>
+    <div class="beat" data-focus="register:intent" data-labels="register:knowledge,register:intent"></div>
+    <div class="beat" data-focus="register:contracts" data-labels="register:knowledge,register:intent,register:contracts"></div>
+    <div class="beat" data-focus="register:operations" data-labels="registers"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">The Context Nexus</p>
+      <h2>Four Registers at the <em>Core</em></h2>
+      <p class="card-desc">The memory that people and agents work from: four registers, one job each.</p>
+      <dl class="families families-grid beats">
+        <div data-beat="0"><dt>Knowledge</dt><dd>What we know: the domain, the architecture, conventions, past decisions and their reasons</dd></div>
+        <div data-beat="1"><dt>Intent</dt><dd>What we want: specs, acceptance criteria, decisions to apply, the roadmap</dd></div>
+        <div data-beat="2"><dt>Contracts</dt><dd>What we require: checkable rules with a threshold, from quality to security</dd></div>
+        <div data-beat="3"><dt>Operations</dt><dd>What we do: runbooks, incident playbooks, deploy and rollback steps</dd></div>
+      </dl>
+      <p class="card-desc">People write Intent and Contracts. Agents read them and report what they see; they never change them.</p>
+    </div>
+  </section>
+
+  <section id="inheritance" class="stop" data-section="nexus" data-shot="telescope-left" data-parts="wheel,nexus" data-telescope="1" data-focus="nexus" data-labels="levels"
+           data-crumb="Inheritance" data-answers="govern" data-anchor="screen" data-side="right">
+    <div class="card card-wide">
+      <p class="card-num">Inheritance</p>
+      <h2>Org, BU, Team: <em>Nested</em></h2>
+      <p class="card-desc">The Nexus follows the organisation's shape. The organisation sets what everyone inherits: security, conventions, shared tools. A business unit adds what its teams share, and a team adds its own domain.</p>
+      <dl class="families">
+        <div><dt>Extend</dt><dd>Add rules the parent does not cover. Always allowed.</dd></div>
+        <div><dt>Exception</dt><dd>Depart from a parent rule, declared and approved by the parent's owner.</dd></div>
+        <div><dt>Override</dt><dd>Contradict a parent rule without saying so. Blocked.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="intent" class="stop" data-section="nexus" data-shot="nexus-top" data-parts="wheel,nexus" data-focus="register:intent" data-context="nexus"
+           data-labels="register:intent" data-crumb="Intent" data-answers="feed" data-anchor="rim:90" data-side="right">
+    <div class="card">
+      <p class="card-num">In human hands</p>
+      <h2>Intent Belongs to the <em>Team</em></h2>
+      <p class="card-desc">Three registers come down from above. Intent does not: it exists only at team level, because what to build is always a team's call.</p>
+      <p class="card-desc">The idea lives here. People write it; agents take it as their instructions. The sharper the intent, the better the output.</p>
+    </div>
+  </section>
+
+  <section id="bands" class="stop" data-section="layers" data-shot="side" data-parts="wheel,nexus,bands" data-explode="1" data-labels="bands"
+           data-crumb="Five domains" data-answers="harness,secure,tokens" data-anchor="band:contextualise" data-side="right">
+    <div class="card">
+      <p class="card-num">The layers</p>
+      <h2>Five Domains Power the <em>Wheel</em></h2>
+      <p class="card-desc">Under the wheel, thirteen capabilities sit in five domains, from the closest to the work down to the foundation.</p>
+      <dl class="families">
+        <div><dt>Discover</dt><dd>Finds what is worth building, and what already exists</dd></div>
+        <div><dt>Build</dt><dd>Turns the spec into working code</dd></div>
+        <div><dt>Contextualise</dt><dd>Gives every agent the same context and the tools it may call</dd></div>
+        <div><dt>Measure</dt><dd>Proves the output is good, and keeps proving it</dd></div>
+        <div><dt>Platform</dt><dd>Routes, meters and secures every model call, on ground you control</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="layers" class="stop" data-section="layers" data-shot="exploded-left" data-parts="wheel,nexus,bands" data-explode="1"
+           data-labels="layers-right" data-lead-side="right" data-lead-column="0.74" data-crumb="Thirteen layers" data-answers="harness"
+           data-anchor="screen" data-side="left" data-dock="bottom">
+    <div class="beat"></div>
+    <div class="beat" data-energize="layer:L8,layer:L2,layer:L5" data-crumb="Absorb the volume first"></div>
+    <div class="card card-compact">
+      <p class="card-num">Thirteen layers</p>
+      <h2>Absorb the Volume, Then Open the <em>Taps</em></h2>
+      <p class="card-desc">Agents multiply the specs, code and changes to review. Manual review alone gives way under that load.</p>
+      <p class="card-desc">Deploy first the layers that absorb it: automated quality gates (L8), spec-driven development (L2), the Context Factory (L5). Then open the taps: more assistants, more agents.</p>
+    </div>
+  </section>
+
+  <section id="contextualise" class="stop" data-section="layers" data-shot="band:contextualise" data-parts="wheel,nexus,bands" data-explode="1" data-split="contextualise"
+           data-focus="band:contextualise,nexus" data-labels="layers:contextualise" data-lead-side="right" data-lead-column="0.8"
+           data-pulse="nexus,layer:L5,layer:L4,layer:L6" data-pulse-lag="layer:L4=0.35,layer:L6=0.7" data-pulse-band="contextualise"
+           data-crumb="Contextualise" data-answers="feed,harness" data-anchor="screen" data-side="left">
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">The flow</p>
+      <h2>Context Flows Out of the <em>Nexus</em></h2>
+      <dl class="families">
+        <div><dt>L5 Context Factory</dt><dd>Collects, dates and sorts what the Nexus holds, then assembles each agent's brief for its task</dd></div>
+        <div><dt>L4 Agent &amp; MCP Registry</dt><dd>Lists the agents and the tools each one may call. MCP is the standard way agents call tools.</dd></div>
+        <div><dt>L6 Multi-agent Orchestration</dt><dd>Hands the work to agents in order, each with its brief, and places the reviews</dd></div>
+      </dl>
+      <p class="card-desc">What agents learn in test and in production flows back into the registers.</p>
+    </div>
+  </section>
+
+  <section id="spine" class="stop" data-section="layers" data-shot="spine" data-parts="wheel,nexus,bands" data-explode="1" data-focus="spine,layer:L3,layer:L4,layer:L10"
+           data-context="bands" data-energize="spine" data-labels="spine"
+           data-lead-drop="0.75" data-crumb="Identity spine" data-answers="identity,secure" data-anchor="spine" data-side="right">
+    <div class="card card-compact-title">
+      <p class="card-num">Autonomous pipelines</p>
+      <h2>Nothing Starts Without the <em>Key</em></h2>
+      <p class="card-desc">When an agent works under a person's account or a shared one, the trace names someone who did not make the decision. Nobody can audit that work, bill it or switch it off.</p>
+      <p class="card-desc">So every agent gets its own identity: scoped, traced, revocable on its own. The key is checked at the AI Gateway (which model), the Registry (which tool) and the infrastructure (which data).</p>
+      <p class="card-desc">Every artefact then has an author, and a named person who answers for it.</p>
+    </div>
+  </section>
+
+  <section id="roles" class="stop" data-section="people" data-shot="exploded" data-parts="wheel,nexus,bands" data-explode="1" data-telescope="1"
+           data-crumb="Roles" data-lead-side="left" data-lead-column="0.36" data-anchor="band:contextualise" data-side="right">
+    <div class="beat" data-focus="register:intent,phase:design,layer:L2" data-energize="register:intent,phase:design,layer:L2" data-labels="role:spec" data-crumb="Specification Engineer" data-answers="feed"></div>
+    <div class="beat" data-focus="layer:L5,register:knowledge,register:contracts" data-energize="layer:L5,register:knowledge,register:contracts" data-labels="role:context" data-crumb="Context Engineer" data-answers="feed"></div>
+    <div class="beat" data-focus="layer:L6,layer:L1" data-energize="layer:L6,layer:L1" data-labels="role:orchestrator" data-crumb="Orchestrator" data-answers="harness"></div>
+    <div class="beat" data-focus="gates" data-energize="gates" data-labels="role:guarantor" data-crumb="Decision Guarantor" data-answers="govern,secure"></div>
+    <div class="beat" data-focus="layer:L8,layer:L9" data-energize="layer:L8,layer:L9" data-labels="role:evaluation" data-crumb="Evaluation Engineer" data-answers="measure"></div>
+    <div class="beat" data-focus="layer:L4,layer:L6" data-energize="layer:L4,layer:L6" data-labels="role:agentops" data-crumb="AgentOps" data-answers="govern"></div>
+    <div class="beat" data-focus="layer:L7,layer:L3" data-energize="layer:L7,layer:L3" data-labels="role:finops" data-crumb="AI FinOps" data-answers="tokens"></div>
+    <div class="beat" data-focus="spine" data-energize="spine" data-labels="role:audit" data-crumb="Trace &amp; Audit" data-answers="identity"></div>
+    <div class="card">
+      <p class="card-num">Role lens</p>
+      <h2>People Own the <em>Parts</em></h2>
+      <p class="card-desc">Eight roles run the engine. Each role lights the parts it owns.</p>
+      <p class="roles beats"><span class="roles-group">In each team</span><span data-beat="0">Specification&nbsp;Engineer</span> · <span data-beat="1">Context&nbsp;Engineer</span> · <span data-beat="2">Orchestrator</span> · <span data-beat="3">Decision&nbsp;Guarantor</span></p>
+      <p class="roles beats"><span class="roles-group">For all teams</span><span data-beat="4">Evaluation&nbsp;Engineer</span> · <span data-beat="5">AgentOps</span> · <span data-beat="6">AI&nbsp;FinOps</span> · <span data-beat="7">Trace&nbsp;&amp;&nbsp;Audit</span></p>
+      <p class="card-desc">These are hats, not new hires. Left alone, the context, orchestration and decision hats land on the tech lead: about 0.7 FTE on top of the job (Zenika estimate).</p>
+    </div>
+  </section>
+
+  <section id="measure" class="stop" data-section="measure" data-shot="band:measure" data-parts="wheel,nexus,bands" data-explode="1" data-split="measure"
+           data-labels="layers:measure" data-lead-side="right" data-crumb="Four families" data-answers="measure" data-anchor="screen" data-side="left">
+    <div class="beat" data-focus="layer:L8,layer:L9" data-energize="layer:L8,layer:L9" data-crumb="Delivery"></div>
+    <div class="beat" data-shot="band-high:measure" data-focus="layer:L8,gates" data-energize="layer:L8,gates" data-crumb="Quality"></div>
+    <div class="beat" data-focus="layer:L1,layer:L4" data-energize="layer:L1,layer:L4" data-crumb="Transformation"></div>
+    <div class="beat" data-shot="band-high:measure" data-focus="phase:deepen,gate:G5" data-energize="phase:deepen,gate:G5" data-crumb="Value"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Measure</p>
+      <h2>Measure the <em>System</em></h2>
+      <dl class="families beats">
+        <div data-beat="0"><dt>Delivery</dt><dd>The four DORA metrics: lead time, deployment frequency, change failure rate, time to restore</dd></div>
+        <div data-beat="1"><dt>Quality</dt><dd>Rework rate, gate pass rate, vulnerabilities introduced</dd></div>
+        <div data-beat="2"><dt>Transformation</dt><dd>Share of workflows run with AI, reusable assets in use, teams on board</dd></div>
+        <div data-beat="3"><dt>Value</dt><dd>Capacity moved to high-value work</dd></div>
+      </dl>
+      <p class="card-text">Freeze a baseline first; expect a dip before the gain.</p>
+    </div>
+  </section>
+
+  <section id="napkin" class="stop" data-section="napkin" data-shot="hero-right" data-idle data-idea="run" data-labels="phases-engraved"
+           data-crumb="The whole engine" data-answers="feed,govern,harness,secure,identity,tokens,measure" data-anchor="screen" data-side="left">
+    <div class="card">
+      <p class="card-num">The napkin</p>
+      <h2>Wheel, Layers, Nexus, <em>People</em></h2>
+      <p class="card-desc">The wheel moves the idea. The layers power it. The Nexus feeds it. People steer it.</p>
+      <p class="card-text">Which part is your organisation missing?</p>
+    </div>
+  </section>
+
+  <section id="links" class="stop" data-section="napkin" data-shot="hero-right" data-idle data-idea="run" data-theme="blueprint"
+           data-hud="bare" data-crumb="Go further" data-anchor="screen" data-side="left">
+    <div class="card card-hero card-links">
+      <p class="card-num">Go further</p>
+      <h1>Start Your <em>Engine</em></h1>
+      <dl class="links">
+        <div><dt><a href="https://aixsdlc.zenika.com">aixsdlc.zenika.com</a></dt><dd>Zenika's AI×SDLC framework, stage by stage</dd></div>
+        <div><dt><a href="https://cnexus.fr">cnexus.fr</a></dt><dd>The Context Nexus: shared intents as a single source of truth</dd></div>
+      </dl>
+    </div>
+  </section>
+
+</div>
+
+<div class="hud" aria-live="polite">
+  <nav class="hud-nav" aria-label="Where we are">
+    <div class="hud-crumb"><span class="crumb-act"></span><span class="crumb-part"></span></div>
+    <ol class="hud-acts" aria-hidden="true"></ol>
+    <ul class="hud-checklist" aria-label="Questions answered so far"></ul>
+  </nav>
+  <div class="hud-logo"><img src="assets/zenika-monogram.png" alt="Zenika"></div>
+  <div class="hud-footer">
+    <span class="hud-source"></span>
+    <span class="hud-counter"></span>
+  </div>
+</div>
+
+<footer class="nojs-footer">© ZENIKA 2026 · All Rights Reserved</footer>
+
+<div class="rotate" aria-live="polite">
+  <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="20" y="6" width="24" height="52" rx="5"/><line x1="29" y1="51" x2="35" y2="51"/></svg>
+  <p class="rotate-title">Turn Your Phone Sideways</p>
+  <p>The deck is built for a landscape screen.</p>
+</div>
+
+<script src="dist/deck.js"></script>
+</body>
+</html>
