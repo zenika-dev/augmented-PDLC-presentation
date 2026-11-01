@@ -87,7 +87,7 @@ Bands from top to bottom, ordered from closest to the work down to the foundatio
 
 ## 4. The rim: operators
 
-> Under review (2026-10-31): handles and figures are dropped from the rendering as unreadable. Options to anchor roles: role lens, bezel on the wheel, leader lines, keys and slots (design canvas, board 05). The role definitions below stand.
+> Rendering (decided): no handles and no figures. Roles show as a role lens on step 13, one beat per role: the parts a role owns turn red, with their names, and a leader line carries the role's purpose. The handle metaphor below explains what each role controls.
 
 Each operator holds a handle wired to one part of the engine. Two kinds of operators, placed at two heights:
 

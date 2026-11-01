@@ -12,7 +12,7 @@ Interactive three.js keynote for Comex / VP audiences: Zenika's point of view on
 One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts, thin outlines, red means energy). Each `<section class="stop">` in `index.html` is a camera shot plus the engine's state; `<div class="beat">` inside a stop is a substep that changes focus, labels, role lens or HUD without moving the camera. The header comment in `index.html` lists every `data-*` attribute.
 
 - Four pillars, one cylinder: the wheel on top, 13 layers in 5 bands under it, the Context Nexus column through the centre, people as a role lens on the parts.
-- Labels: leader lines (dot on the part, name on a tail, one light box), phase names on the lobes, engraved names on the napkin stop. No blur veils on labels; the HUD block has a light veil and leader names draw above it.
+- Labels: leader lines (dot on the part, name on a tail, one light box), phase names on the lobes, engraved names on the napkin stop. No blur veils on labels; the HUD block has a light veil and leader names draw above it. Names are laid out automatically; a stop can pin a name with `data-lead-at` / `data-lead-at-phone` (step 5). A name turns red with its part when a beat energizes it.
 - HUD: Section › part breadcrumb over the seven pillars, one bar segment per pillar, the seven Comex questions lit where a step speaks to them, source and `n / N` counter. The URL is the counter: `#6`, `#6.3` (third beat).
 - Motion lives in the camera, the running Idea and the energy pulse; respect `prefers-reduced-motion`.
 
@@ -35,13 +35,26 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 ## Stack
 
 - `src/` ES modules, bundled by esbuild (`npm run build`, `npm run dev` to watch and serve) into `dist/deck.js`, an IIFE. `dist/` is committed so the deck opens offline from `file://` with no build.
-- The file to mail is `dist/the-augmented-pdlc.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html`. Keep editing `index.html`; never link a new external file without checking the build's inline step covers it.
-- Phones (coarse pointer, ≤600px in one dimension): font floors and the card minimum width off (`--fl`), HUD questions hidden, safe-area insets, fullscreen on the first touch, a rotate overlay in portrait. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
   - `data.js` (phases, gates, bands, roles, sections, questions), `geometry.js`, `shots.js` (named camera shots)
   - `engine/` builds the parts (`wheel`, `nexus`, `bands`, `layers`) and `index.js` exposes the engine's state and lenses
   - `render/lineart.js`: the line-art renderer (G-buffer then a full-screen composite)
   - `parts.js` (meshes, focus fades, role lens, energy pulse), `labels.js` (CSS2D/CSS3D labels) and `leaders.js` (the leader-line layout)
   - `stops.js` reads stops and beats from `index.html`; `hud.js`, `cards.js`, `input.js` (keys, touch, `#n.b` hash)
   - `main.js` wires them: renderers, the deck controller (`go`, beats) and the frame loop, which only draws while something moves
+- The file to mail is `dist/the-augmented-pdlc.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html`. Keep editing `index.html`; never link a new external file without checking the build's inline step covers it.
 - `css/tokens.css` (brand tokens), `css/engine.css` (labels, cards), `css/hud.css`. Nunito is vendored in `fonts/`.
-- Check changes in Chrome (DevTools MCP) after `npm run build`: reload ignoring cache, screenshot, console empty. `window.deck` exposes `go`, `next`, `previous` for headless checks.
+- Phones (coarse pointer, ≤600px in one dimension): font floors and the card minimum width off (`--fl`), HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move, a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
+
+## Checking changes
+
+- "Step N" in feedback is the `N / 16` counter (the `#N` hash), not a section id.
+- After `npm run build`, check in Chrome (DevTools MCP) in a background tab of your own: never leave a viewport emulation on in the window the user watches, and close the tab when done.
+- Overlap check on every stop and beat touched, at 1920×1080, 1440×900, 1366×768 and 844×390 (phone: mobile, touch, landscape): card, HUD block, logo, footer items, plain labels and leader boxes must not overlap or leave the screen. Then screenshots of what changed, console empty. `window.deck` exposes `go`, `next`, `previous`, `stops`.
+- Republish the phone preview Artifact (claude.ai/artifact/XHaZUr2ZKrjW6QfhwA2se4) from `dist/the-augmented-pdlc.html`.
+
+## Repository
+
+- Public: github.com/zenika-dev/augmented-PDLC-presentation. Work on `main` and push only `main`.
+- `feat/three-engine` and `feat/map-skeleton` are a local archive whose history holds material that must stay private: never push them, never `git push --all` or `--mirror`.
+- Before every push, grep the commit for client names, references to internal or client documents, pricing and personal emails. Footer stays `© ZENIKA 2026 · All Rights Reserved`; no licence file.
+- The Anthropic `pdf` and `pptx` agent skills stay local (gitignored); the other skills in `.agents/` are MIT or Apache.
