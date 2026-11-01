@@ -220,6 +220,11 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   color: var(--dark);
 }
 
+.lead.is-energized {
+  --lead-ink: var(--red);
+  color: var(--dark);
+}
+
 .lead.label-register,
 .lead.label-level {
   --lead-ink: #f08494;

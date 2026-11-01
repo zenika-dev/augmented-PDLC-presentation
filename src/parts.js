@@ -54,6 +54,14 @@ export function energize(root, tags) {
     obj.userData.energized = !!on;
     u.role.value = on ? ROLE.red : obj.userData.role;
   });
+  // A leader name lights with its part, so the red parts read against the names on screen
+  root.traverse((obj) => {
+    const el = obj.userData.leader;
+    if (!el || !obj.parent) return;
+    let on = false;
+    obj.parent.traverse((m) => (on = on || !!m.userData.energized));
+    el.classList.toggle("is-energized", on);
+  });
 }
 
 // Energy pulse: parts carrying these tags let the red wave run through them (see lineart.js).
