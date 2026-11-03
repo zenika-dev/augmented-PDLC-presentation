@@ -118,7 +118,7 @@ export function buildWheel() {
   track.rotation.x = Math.PI / 2;
   group.add(track);
   SHAPES.forEach((shape) => {
-    const name = leader(shape.name, "shapes", "label-shape");
+    const name = leader(shape.label || shape.name, "shapes", "label-shape");
     const pin = mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.08, 12), "#1e1e1e", ["wheel", "shapes"]);
     if (shape.drop) {
       pin.position.copy(polar(DROP.rOut - 0.2, DROP.to - 20, 0.04));

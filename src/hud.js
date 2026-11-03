@@ -1,9 +1,7 @@
 // The fixed HUD: Section › part breadcrumb, one bar segment per pillar, the seven Comex questions
 // (lit where the step speaks to them, soft once met), the source line and the n / N counter.
-import { CONCERNS, SECTIONS } from "./data.js";
+import { CONCERNS, SECTIONS, MENTION } from "./data.js";
 import { list, view } from "./stops.js";
-
-const MENTION = "© ZENIKA 2026 · All Rights Reserved";
 
 export function createHud(stops, reduceMotion) {
   const el = {

@@ -1,4 +1,5 @@
 // What the engine is made of. Mirrors docs/engine.md: change the model there first, then here.
+import { FR } from "./data.fr.js";
 
 export const PHASES = [
   { id: "discover", name: "Discover", color: "#bf1d67" },
@@ -149,3 +150,16 @@ export const SECTIONS = [
   { id: "measure", name: "Measure" },
   { id: "napkin", name: "The napkin" },
 ];
+
+// The page's language picks the prose: index.fr.html sets lang="fr". Names stay as above on both decks.
+// No document when scripts/build.mjs imports this file in Node: English.
+export const LANG = typeof document !== "undefined" && document.documentElement.lang === "fr" ? "fr" : "en";
+export const MENTION = LANG === "fr" ? FR.mention : "© ZENIKA 2026 · All Rights Reserved";
+
+if (LANG === "fr") {
+  GATES.forEach((g) => { g.checks = FR.gates[g.id]; });
+  SHAPES.forEach((s) => { s.label = FR.shapes[s.name]; }); // name stays: data-idea looks shapes up by it
+  ROLES.forEach((r) => { r.purpose = FR.roles[r.id]; });
+  CONCERNS.forEach((c) => Object.assign(c, FR.concerns[c.id]));
+  SECTIONS.forEach((s) => { s.name = FR.sections[s.id]; });
+}

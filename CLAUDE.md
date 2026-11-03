@@ -1,9 +1,9 @@
 # The augmented PDLC — executive keynote
 
-Interactive three.js keynote for Comex / VP audiences: Zenika's point of view on AI across the Product Delivery Life Cycle. English, ~40 min. The audience watches one engine being assembled and run; by the end they can sketch it on a napkin.
+Interactive three.js keynote for Comex / VP audiences: Zenika's point of view on AI across the Product Delivery Life Cycle. English (`index.html`) and French (`index.fr.html`), ~25 min. The audience watches one engine being assembled and run; by the end they can sketch it on a napkin.
 
 - Engine model and deck mechanics: `docs/engine.md` (source of truth: change the model there first, then `src/data.js`)
-- Narrative and voiceover: `docs/outline.md`
+- Narrative and voiceover: `docs/outline.md` (English, older 36-stop outline); French voiceover for the 16 steps: `docs/voiceover.fr.md`
 - Brand rules: `docs/brand-guidelines.md` (written for slides; adapted below)
 - `docs/itinerary.md` is the superseded impress.js plan; its vocabulary and content rules still hold
 
@@ -31,6 +31,7 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 - Source documents (Zenika internal material, client work, template screenshots) are never committed: keep them in `sources/` or `assets/source/` (both ignored).
 - Brand: Nunito only, one red word per title, never red text on dark (use `#ff6b7a`).
 - Copy: titles in title case; every card explains itself to a reader who gets the deck by mail (prose-style-guardian-en: active voice, no hedging, no AI tics, no em dashes as separators).
+- French deck (`index.fr.html`): engine names stay in English (phases, gate names, registers, Org/BU/Team, domains, layers, roles, measure families); prose, crumbs, gate checks, role purposes, questions, sections and shapes are French (`src/data.fr.js`, applied by `data.js` when `<html lang="fr">`). Sentence-case titles, `&#8239;` (narrow no-break space) before `: ; ? !`, prose-style-guardian FR.
 
 ## Stack
 
@@ -41,7 +42,8 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
   - `parts.js` (meshes, focus fades, role lens, energy pulse), `labels.js` (CSS2D/CSS3D labels) and `leaders.js` (the leader-line layout)
   - `stops.js` reads stops and beats from `index.html`; `hud.js`, `cards.js`, `input.js` (keys, touch, `#n.b` hash)
   - `main.js` wires them: renderers, the deck controller (`go`, beats) and the frame loop, which only draws while something moves
-- The file to mail is `dist/the-augmented-pdlc.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html`. Keep editing `index.html`; never link a new external file without checking the build's inline step covers it.
+- The files to mail are `dist/the-augmented-pdlc.html` and `dist/the-augmented-pdlc.fr.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html` / `index.fr.html`. Never link a new external file without checking the build's inline step covers it.
+- Every change to a stop, beat or `data-*` attribute goes into both pages; only the text and `data-crumb` differ. The build fails when `index.fr.html` drifts from `index.html`.
 - `css/tokens.css` (brand tokens), `css/engine.css` (labels, cards), `css/hud.css`. Nunito is vendored in `fonts/`.
 - Phones (coarse pointer, ≤600px in one dimension): font floors and the card minimum width off (`--fl`), HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move, a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
 
@@ -50,11 +52,12 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 - "Step N" in feedback is the `N / 16` counter (the `#N` hash), not a section id.
 - After `npm run build`, check in Chrome (DevTools MCP) in a background tab of your own: never leave a viewport emulation on in the window the user watches, and close the tab when done.
 - Overlap check on every stop and beat touched, at 1920×1080, 1440×900, 1366×768 and 844×390 (phone: mobile, touch, landscape): card, HUD block, logo, footer items, plain labels and leader boxes must not overlap or leave the screen. Then screenshots of what changed, console empty. `window.deck` exposes `go`, `next`, `previous`, `stops`.
-- Republish the phone preview Artifact (claude.ai/artifact/XHaZUr2ZKrjW6QfhwA2se4) from `dist/the-augmented-pdlc.html`.
+- Check both pages when a change touches shared code or layout.
+- Republish the phone preview Artifacts: EN (claude.ai/artifact/XHaZUr2ZKrjW6QfhwA2se4) from `dist/the-augmented-pdlc.html`, FR (claude.ai/artifact/5P77AThmimWJgVafH4BZXm) from `dist/the-augmented-pdlc.fr.html`.
 
 ## Repository
 
 - Public: github.com/zenika-dev/augmented-PDLC-presentation. Work on `main` and push only `main`.
 - `feat/three-engine` and `feat/map-skeleton` are a local archive whose history holds material that must stay private: never push them, never `git push --all` or `--mirror`.
-- Before every push, grep the commit for client names, references to internal or client documents, pricing and personal emails. Footer stays `© ZENIKA 2026 · All Rights Reserved`; no licence file.
+- Before every push, grep the commit for client names, references to internal or client documents, pricing and personal emails. Footer stays `© ZENIKA 2026 · All Rights Reserved` (FR: `© ZENIKA 2026 · Tous droits réservés`); no licence file.
 - The Anthropic `pdf` and `pptx` agent skills stay local (gitignored); the other skills in `.agents/` are MIT or Apache.
