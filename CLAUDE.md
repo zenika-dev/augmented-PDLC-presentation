@@ -47,6 +47,13 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 - `css/tokens.css` (brand tokens), `css/engine.css` (labels, cards), `css/hud.css`. Nunito is vendored in `fonts/`.
 - Phones (coarse pointer, ≤600px in one dimension): font floors and the card minimum width off (`--fl`), HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move, a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
 
+## Client editions
+
+- A client edition is a page in `editions/<name>/` (gitignored, never committed or pushed): its own `index.html`, theme, fonts, logo and a `<script type="application/json" id="edition">` block that replaces our sections, questions and shapes and patches gates, bands and layers (`applyEdition` in `src/data.js`). Client names and prose never go into `src/`, `css/` or `docs/`.
+- The engine reads its line-art colours from `--art-*` / `--art-dark-*` custom properties (`src/render/lineart.js`), so an edition repaints it from CSS. Without them the deck keeps its own look.
+- `npm run build` also builds each edition into `editions/<name>/dist/` (file name from `<meta name="single-file">`). The EN/FR parity check does not apply to editions.
+- Generic engine work for an edition happens on a feature branch, not on `main`. `editions/<name>/private-terms.txt` lists the words that must never reach the public repo.
+
 ## Checking changes
 
 - "Step N" in feedback is the `N / 16` counter (the `#N` hash), not a section id.
@@ -59,5 +66,5 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 
 - Public: github.com/zenika-dev/augmented-PDLC-presentation. Work on `main` and push only `main`.
 - `feat/three-engine` and `feat/map-skeleton` are a local archive whose history holds material that must stay private: never push them, never `git push --all` or `--mirror`.
-- Before every push, grep the commit for client names, references to internal or client documents, pricing and personal emails. Footer stays `© ZENIKA 2026 · All Rights Reserved` (FR: `© ZENIKA 2026 · Tous droits réservés`); no licence file.
+- Before every push, run `npm run check:private` (nothing tracked under `editions/`, no term from `editions/*/private-terms.txt` in the tree or the unpushed commits) and grep the commit for client names, references to internal or client documents, pricing and personal emails. Footer stays `© ZENIKA 2026 · All Rights Reserved` (FR: `© ZENIKA 2026 · Tous droits réservés`); no licence file.
 - The Anthropic `pdf` and `pptx` agent skills stay local (gitignored); the other skills in `.agents/` are MIT or Apache.

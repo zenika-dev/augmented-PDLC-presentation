@@ -122,8 +122,17 @@ const COMPOSITE = `
 const PAPER = { lo: "#ecebef", hi: "#ffffff", line: "#6f6a72", redLo: "#e81c35", redHi: "#ff7c8a", redLine: "#9e1028", softLo: "#fbd9de", softHi: "#fff6f7", softLine: "#f08494" };
 const BLUEPRINT = { lo: "#1e1e1e", hi: "#2a2a2a", line: "#f4f4f4", redLo: "#c81a30", redHi: "#ff6b7a", redLine: "#ff8a96", softLo: "#3a2028", softHi: "#4a2a34", softLine: "#ff8fa0" };
 
+// An edition repaints the engine from CSS: --art-<key> on :root for paper, --art-dark-<key> for blueprint
+// (keys in kebab case: --art-red-lo). Unset keys keep the colours above.
+function palette(base, prefix) {
+  const css = getComputedStyle(document.documentElement);
+  const value = (k) => css.getPropertyValue(`--${prefix}-${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`).trim();
+  return Object.fromEntries(Object.keys(base).map((k) => [k, value(k) || base[k]]));
+}
+
 export function createLineArt(renderer) {
-  const P = PAPER;
+  const P = palette(PAPER, "art");
+  const B = palette(BLUEPRINT, "art-dark");
   // textures[0]: light, role, focus, coverage; textures[1]: view normals
   const gbuf = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, count: 2 });
   gbuf.depthTexture = new THREE.DepthTexture(1, 1, THREE.FloatType);
@@ -142,7 +151,7 @@ export function createLineArt(renderer) {
   const blueprint = {};
   Object.keys(P).forEach((k) => {
     paper[k] = uniforms[k].value.clone();
-    blueprint[k] = col(BLUEPRINT[k]).value;
+    blueprint[k] = col(B[k]).value;
   });
 
   // 0 = paper, 1 = blueprint

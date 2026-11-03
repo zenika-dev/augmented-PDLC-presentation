@@ -23,3 +23,6 @@ assets/source/*.png
 .agents/skills/pptx/
 .claude/skills/pdf
 .claude/skills/pptx
+
+# Client editions of the deck: client names, brand and programme content. Never commit, never push.
+editions/

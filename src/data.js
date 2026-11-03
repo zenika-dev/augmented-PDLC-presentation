@@ -154,7 +154,6 @@ export const SECTIONS = [
 // The page's language picks the prose: index.fr.html sets lang="fr". Names stay as above on both decks.
 // No document when scripts/build.mjs imports this file in Node: English.
 export const LANG = typeof document !== "undefined" && document.documentElement.lang === "fr" ? "fr" : "en";
-export const MENTION = LANG === "fr" ? FR.mention : "© ZENIKA 2026 · All Rights Reserved";
 
 if (LANG === "fr") {
   GATES.forEach((g) => { g.checks = FR.gates[g.id]; });
@@ -162,4 +161,30 @@ if (LANG === "fr") {
   ROLES.forEach((r) => { r.purpose = FR.roles[r.id]; });
   CONCERNS.forEach((c) => Object.assign(c, FR.concerns[c.id]));
   SECTIONS.forEach((s) => { s.name = FR.sections[s.id]; });
+}
+
+// A client edition (editions/<name>/index.html, never committed) brings its own data in
+// <script type="application/json" id="edition">, so client names and prose never enter src/ or the bundle.
+// Lists replace ours (sections, concerns, shapes); keyed objects patch ours by id (gates, bands, layers);
+// bandOrder restacks the bands, top first.
+export const EDITION = readEdition();
+if (EDITION) applyEdition(EDITION);
+export const MENTION = EDITION?.mention ?? (LANG === "fr" ? FR.mention : "© ZENIKA 2026 · All Rights Reserved");
+
+function readEdition() {
+  const el = typeof document !== "undefined" && document.getElementById("edition");
+  return el ? JSON.parse(el.textContent) : null;
+}
+
+export function applyEdition(e) {
+  const replace = (list, items) => items && list.splice(0, list.length, ...items);
+  replace(SECTIONS, e.sections);
+  replace(CONCERNS, e.concerns);
+  replace(SHAPES, e.shapes);
+  GATES.forEach((g) => Object.assign(g, e.gates?.[g.id]));
+  if (e.bandOrder) replace(BANDS, e.bandOrder.map((id) => BANDS.find((b) => b.id === id)));
+  BANDS.forEach((b) => {
+    Object.assign(b, e.bands?.[b.id]);
+    b.layers.forEach((l) => Object.assign(l, e.layers?.[l.id]));
+  });
 }

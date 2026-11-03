@@ -2,8 +2,10 @@
 // Chrome blocks ES modules on file://, hence the IIFE format.
 // A full build also writes dist/the-augmented-pdlc.html: index.html with its styles, script and images
 // inlined, the one file to mail; and dist/the-augmented-pdlc.fr.html from index.fr.html, the French version.
+// Client editions (editions/<name>/index.html, gitignored) build into editions/<name>/dist/ the same way.
 import * as esbuild from "esbuild";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { CONCERNS } from "../src/data.js";
 import { FR } from "../src/data.fr.js";
 
@@ -13,6 +15,18 @@ const PAGES = [
   { src: "index.html", out: "dist/the-augmented-pdlc.html", question: (c) => c.question },
   { src: "index.fr.html", out: "dist/the-augmented-pdlc.fr.html", question: (c) => FR.concerns[c.id].question },
 ];
+
+// Each edition names its single file in <meta name="single-file">; its questions come from its own data
+function editions() {
+  if (!existsSync("editions")) return [];
+  return readdirSync("editions", { withFileTypes: true })
+    .filter((d) => d.isDirectory() && existsSync(join("editions", d.name, "index.html")))
+    .map((d) => {
+      const src = join("editions", d.name, "index.html");
+      const file = readFileSync(src, "utf8").match(/<meta name="single-file" content="([^"]+)">/)?.[1] ?? `${d.name}.html`;
+      return { src, out: join("editions", d.name, "dist", file), question: (c) => c.question };
+    });
+}
 
 const options = {
   entryPoints: ["src/main.js"],
@@ -26,18 +40,25 @@ const options = {
   logLevel: "info",
 };
 
-// Functions as replacements: the bundle holds "$" sequences that a replacement string would expand
+// Functions as replacements: the bundle holds "$" sequences that a replacement string would expand.
+// Paths resolve from the page's own folder, so an edition can link ../../css/ and its own theme.
+const MIME = { png: "image/png", svg: "image/svg+xml" };
 function single({ src, out, question }) {
+  const at = (path) => join(dirname(src), path);
   let html = readFileSync(src, "utf8");
-  html = html.replace(/<link rel="stylesheet" href="(css\/[^"]+)">/g, (_, path) => `<style>\n${readFileSync(path, "utf8")}</style>`);
-  html = html.replace(/<script src="(dist\/[^"]+)"><\/script>/g, (_, path) =>
-    `<script>\n${readFileSync(path, "utf8").replace(/<\/script/gi, "<\\/script")}</script>`);
-  html = html.replace(/src="(assets\/[^"]+\.png)"/g, (_, path) => `src="data:image/png;base64,${readFileSync(path).toString("base64")}"`);
+  // Images first: the bundle inlined below must not be scanned for src="…"
+  html = html.replace(/src="([^":]+\.(png|svg))"/g, (_, path, ext) => `src="data:${MIME[ext]};base64,${readFileSync(at(path)).toString("base64")}"`);
+  html = html.replace(/<link rel="stylesheet" href="([^"]+\.css)">/g, (_, path) => `<style>\n${readFileSync(at(path), "utf8")}</style>`);
+  html = html.replace(/<script src="([^"]+\.js)"><\/script>/g, (_, path) =>
+    `<script>\n${readFileSync(at(path), "utf8").replace(/<\/script/gi, "<\\/script")}</script>`);
   // The problem card's questions, written in so the reading version (no scripts) shows them too
-  const questions = CONCERNS.map((c) => `<li data-concern="${c.id}">${question(c)}</li>`).join("");
+  const edition = html.match(/<script type="application\/json" id="edition">([\s\S]*?)<\/script>/);
+  const concerns = (edition && JSON.parse(edition[1]).concerns) || CONCERNS;
+  const questions = concerns.map((c) => `<li data-concern="${c.id}">${question(c)}</li>`).join("");
   html = html.replace('<ul class="concerns"></ul>', () => `<ul class="concerns">${questions}</ul>`);
-  const left = html.match(/(href|src)="(css|dist|assets|fonts)\/[^"]*"/g);
+  const left = html.match(/(href|src)="(?!data:|https?:|mailto:|#)[^"]+\.(css|js|png|svg|woff2?)"/g);
   if (left) throw new Error(`${out}: not inlined: ${left.join(", ")}`);
+  mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);
   console.log(`  ${out}  ${(html.length / 1024).toFixed(0)}kb`);
 }
@@ -66,5 +87,5 @@ if (watch) {
 } else {
   parity();
   await esbuild.build(options);
-  PAGES.forEach(single);
+  [...PAGES, ...editions()].forEach(single);
 }
