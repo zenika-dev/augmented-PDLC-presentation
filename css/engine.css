@@ -459,6 +459,11 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   color: var(--grey);
 }
 
+/* French runs longer: a tighter list keeps the problem card off the footer at 1366×768 */
+:lang(fr) .concerns {
+  gap: calc(4 * var(--u));
+}
+
 .concerns li {
   display: flex;
   align-items: center;
