@@ -6,8 +6,9 @@ import { lineMaterial, ROLE } from "./render/lineart.js";
 
 // Line art: the Idea and the Team core in red, the outer Nexus tubes in soft red, gates and rods in ink, the rest white
 function role(color, tags) {
-  if (tags.includes("idea") || tags.includes("level:team")) return ROLE.red;
-  if (tags.includes("nexus")) return ROLE.soft;
+  if (tags.includes("idea") || tags.includes("level:team") || tags.includes("energy")) return ROLE.red;
+  if (tags.includes("accent")) return ROLE.accent;
+  if (tags.includes("nexus") || tags.includes("soft")) return ROLE.soft;
   if (tags.some((t) => t.startsWith("phase:"))) return ROLE.part;
   return new THREE.Color(color).getHSL({}, THREE.SRGBColorSpace).l < 0.2 ? ROLE.ink : ROLE.part;
 }

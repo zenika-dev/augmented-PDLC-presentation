@@ -4,7 +4,7 @@
 // then a full-screen pass draws the fills and the lines.
 import * as THREE from "three";
 
-export const ROLE = { part: 0, red: 1, ink: 2, soft: 3 };
+export const ROLE = { part: 0, red: 1, ink: 2, soft: 3, accent: 4 };
 
 // Energy pulse: a red wave front running out from the engine's axis (radius in world units), shared by
 // every material. Only charged parts let it through.
@@ -65,7 +65,9 @@ const COMPOSITE = `
   uniform sampler2D tLit; uniform sampler2D tNorm; uniform sampler2D tDepth;
   uniform vec2 res; uniform float px; uniform float near; uniform float far;
   uniform vec3 lo; uniform vec3 hi; uniform vec3 line; uniform vec3 redLo; uniform vec3 redHi; uniform vec3 redLine;
-  uniform vec3 softLo; uniform vec3 softHi; uniform vec3 softLine;
+  uniform vec3 softLo; uniform vec3 softHi; uniform vec3 softLine; uniform float stipple;
+  uniform vec3 accentLo; uniform vec3 accentHi; uniform vec3 accentLine;
+  uniform float dimInk; uniform float dimAlpha;
   varying vec2 vUv;
 
   float viewZ(vec2 uv) {
@@ -100,27 +102,40 @@ const COMPOSITE = `
     float e = max(sil, crease * 0.7);
 
     float role = floor(L.g * 4.0 + 0.5);
-    bool soft = role > 2.5;
-    bool red = (role > 0.5 && role < 1.5) || soft;
+    bool accent = role > 3.5;
+    bool soft = role > 2.5 && !accent;
+    bool red = (role > 0.5 && role < 1.5) || soft || accent;
+    vec3 ink = accent ? accentLine : soft ? softLine : red ? redLine : line;
+    ink = mix(ink, mix(line, hi, dimInk), eDim);
     vec4 c = vec4(0.0);
     if (L.a > 0.5) {
       float t = smoothstep(0.05, 0.95, L.r);
-      vec3 fill = soft ? mix(softLo, softHi, t) : red ? mix(redLo, redHi, t) : mix(lo, hi, t);
-      if (role > 1.5 && role < 2.5) fill = mix(line, lo, 0.25);
+      vec3 fill = accent ? mix(accentLo, accentHi, t) : soft ? mix(softLo, softHi, t) : red ? mix(redLo, redHi, t) : mix(lo, hi, t);
+      bool inkRole = role > 1.5 && role < 2.5;
+      if (inkRole) fill = mix(line, lo, 0.25);
       fill = mix(fill, mix(lo, hi, t), L.b * (red ? 1.0 : 0.0));
+      // Dot shading (engraving look, off unless an edition asks): a staggered dot screen in the line colour,
+      // dots growing as the face turns from the light
+      if (stipple > 0.0 && !inkRole) {
+        vec2 g = gl_FragCoord.xy / (2.6 * px);
+        g.x += 0.5 * mod(floor(g.y), 2.0);
+        float shade = clamp((0.62 - t) / 0.62, 0.0, 1.0);
+        float r = 0.42 * sqrt(shade);
+        float dt = 1.0 - smoothstep(r - 0.08, r + 0.08, length(fract(g) - 0.5));
+        fill = mix(fill, ink, dt * 0.45 * stipple * (1.0 - L.b));
+      }
       c = vec4(fill, 1.0);
     }
-    vec3 ink = soft ? softLine : red ? redLine : line;
-    ink = mix(ink, mix(line, hi, 0.6), eDim);
-    float a = clamp(e, 0.0, 1.0) * (1.0 - 0.5 * eDim);
+    float a = clamp(e, 0.0, 1.0) * (1.0 - dimAlpha * eDim);
     c.rgb = mix(c.rgb, ink, a);
     c.a = max(c.a, a);
     gl_FragColor = vec4(c.rgb * c.a, c.a); // premultiplied
   }`;
 
 // Paper: white parts, grey lines. Blueprint: dark parts, white lines (the closing stop). Red stays energy.
-const PAPER = { lo: "#ecebef", hi: "#ffffff", line: "#6f6a72", redLo: "#e81c35", redHi: "#ff7c8a", redLine: "#9e1028", softLo: "#fbd9de", softHi: "#fff6f7", softLine: "#f08494" };
-const BLUEPRINT = { lo: "#1e1e1e", hi: "#2a2a2a", line: "#f4f4f4", redLo: "#c81a30", redHi: "#ff6b7a", redLine: "#ff8a96", softLo: "#3a2028", softHi: "#4a2a34", softLine: "#ff8fa0" };
+// Accent: a second highlight an edition may colour (--art-accent-*); by default it looks like soft.
+const PAPER = { lo: "#ecebef", hi: "#ffffff", line: "#6f6a72", redLo: "#e81c35", redHi: "#ff7c8a", redLine: "#9e1028", softLo: "#fbd9de", softHi: "#fff6f7", softLine: "#f08494", accentLo: "#fbd9de", accentHi: "#fff6f7", accentLine: "#f08494" };
+const BLUEPRINT = { lo: "#1e1e1e", hi: "#2a2a2a", line: "#f4f4f4", redLo: "#c81a30", redHi: "#ff6b7a", redLine: "#ff8a96", softLo: "#3a2028", softHi: "#4a2a34", softLine: "#ff8fa0", accentLo: "#3a2028", accentHi: "#4a2a34", accentLine: "#ff8fa0" };
 
 // An edition repaints the engine from CSS: --art-<key> on :root for paper, --art-dark-<key> for blueprint
 // (keys in kebab case: --art-red-lo). Unset keys keep the colours above.
@@ -130,9 +145,21 @@ function palette(base, prefix) {
   return Object.fromEntries(Object.keys(base).map((k) => [k, value(k) || base[k]]));
 }
 
-export function createLineArt(renderer) {
+// stipple: dot shading strength, 0–1 (or --art-stipple on :root; --art-dark-stipple for blueprint, which
+// defaults to the paper value)
+export function createLineArt(renderer, { stipple } = {}) {
   const P = palette(PAPER, "art");
   const B = palette(BLUEPRINT, "art-dark");
+  const root = getComputedStyle(document.documentElement);
+  const css = parseFloat(root.getPropertyValue("--art-stipple"));
+  const dots = stipple ?? (Number.isFinite(css) ? css : 0);
+  const cssDark = parseFloat(root.getPropertyValue("--art-dark-stipple"));
+  const dotsDark = Number.isFinite(cssDark) ? cssDark : dots;
+  // How far a faded part's lines step back: towards the fill colour, and in opacity (--art-dim-ink, --art-dim-alpha)
+  const num = (name, fallback) => {
+    const n = parseFloat(root.getPropertyValue(name));
+    return Number.isFinite(n) ? n : fallback;
+  };
   // textures[0]: light, role, focus, coverage; textures[1]: view normals
   const gbuf = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, count: 2 });
   gbuf.depthTexture = new THREE.DepthTexture(1, 1, THREE.FloatType);
@@ -145,6 +172,10 @@ export function createLineArt(renderer) {
     res: { value: new THREE.Vector2(1, 1) }, px: { value: 1 }, near: { value: 0.1 }, far: { value: 100 },
     lo: col(P.lo), hi: col(P.hi), line: col(P.line), redLo: col(P.redLo), redHi: col(P.redHi), redLine: col(P.redLine),
     softLo: col(P.softLo), softHi: col(P.softHi), softLine: col(P.softLine),
+    accentLo: col(P.accentLo), accentHi: col(P.accentHi), accentLine: col(P.accentLine),
+    stipple: { value: dots },
+    dimInk: { value: num("--art-dim-ink", 0.6) },
+    dimAlpha: { value: num("--art-dim-alpha", 0.5) },
   };
   // Colours of both palettes, ready to blend (setTheme)
   const paper = {};
@@ -157,6 +188,7 @@ export function createLineArt(renderer) {
   // 0 = paper, 1 = blueprint
   function setTheme(t) {
     Object.keys(paper).forEach((k) => uniforms[k].value.copy(paper[k]).lerp(blueprint[k], t));
+    uniforms.stipple.value = dots + (dotsDark - dots) * t;
   }
 
   const post = new THREE.Scene();
