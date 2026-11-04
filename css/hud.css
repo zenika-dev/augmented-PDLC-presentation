@@ -98,6 +98,9 @@ body[data-hud="crumb"] .hud-checklist {
   width: 0;
   height: 100%;
   background: var(--grad-red);
+}
+
+.hud-acts[data-ready] span {
   transition: width 600ms ease;
 }
 
@@ -114,48 +117,13 @@ body[data-hud="crumb"] .hud-checklist {
 }
 
 .hud-checklist li {
-  display: flex;
-  align-items: center;
-  gap: calc(10 * var(--u));
   transition: color 400ms ease;
 }
 
-.hud-checklist li::before {
-  content: "";
-  width: calc(12 * var(--u));
-  height: calc(12 * var(--u));
-  min-width: 8px;
-  min-height: 8px;
-  border-radius: 50%;
-  border: 1.5px solid var(--fg-muted);
-  box-sizing: border-box;
-  transition: background 400ms ease, border-color 400ms ease, transform 400ms ease;
-}
-
-/* Met earlier in the talk: a soft filled dot */
-.hud-checklist li.is-done {
-  color: var(--fg);
-}
-
-.hud-checklist li.is-done::before {
-  border-color: transparent;
-  background: rgb(238 34 56 / 0.35);
-}
-
-/* What this step speaks to: red dot, bold */
+/* What this step speaks to: dark and bold; the others stay muted */
 .hud-checklist li.is-now {
   color: var(--dark);
   font-weight: 800;
-}
-
-.hud-checklist li.is-now::before {
-  border-color: transparent;
-  background: var(--grad-red);
-  animation: tick 900ms ease 1;
-}
-
-@keyframes tick {
-  50% { transform: scale(1.7); }
 }
 
 /* Phones: the questions would cover the engine; the breadcrumb and the bar stay (same query as --fl) */
@@ -163,6 +131,38 @@ body[data-hud="crumb"] .hud-checklist {
   .hud-checklist {
     display: none;
   }
+}
+
+/* Light/dark switch at the bottom left, on the footer line (pages that have one: client editions).
+   A half-filled disc; the footer text moves right to make room */
+.hud-theme {
+  position: absolute;
+  bottom: calc(40 * var(--u) + var(--safe-b) - 4px);
+  left: calc(64 * var(--u) + var(--safe-l));
+  width: max(24px, calc(30 * var(--u)));
+  height: max(24px, calc(30 * var(--u)));
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  color: var(--fg);
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.75;
+  transition: opacity 200ms ease, transform 400ms ease;
+}
+
+.hud-theme:hover,
+.hud-theme:focus-visible {
+  opacity: 1;
+}
+
+.hud-theme[aria-pressed="true"] {
+  transform: rotate(180deg);
+}
+
+.hud:has(.hud-theme) .hud-footer {
+  left: calc(64 * var(--u) + max(24px, calc(30 * var(--u))) + max(14px, calc(24 * var(--u))) + var(--safe-l));
 }
 
 .hud-logo {
@@ -202,11 +202,9 @@ body[data-hud="crumb"] .hud-checklist {
 
 @media (prefers-reduced-motion: reduce) {
   .hud-nav,
-  .hud-acts span,
-  .hud-checklist li,
-  .hud-checklist li::before {
+  .hud-acts[data-ready] span,
+  .hud-checklist li {
     transition: none;
-    animation: none;
   }
 }
 
@@ -283,4 +281,9 @@ body[data-hud="crumb"] .hud-checklist {
     animation: none;
     transform: rotate(-90deg);
   }
+}
+
+/* A tall card folds the questions away (pages marked data-hud-compact, src/hud.js) */
+body[data-hud-tight] .hud-checklist {
+  display: none;
 }

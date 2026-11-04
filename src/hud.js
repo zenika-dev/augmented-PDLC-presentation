@@ -1,7 +1,9 @@
-// The fixed HUD: Section › part breadcrumb, one bar segment per pillar, the seven Comex questions
-// (lit where the step speaks to them, soft once met), the source line and the n / N counter.
+// The fixed HUD: Section › part breadcrumb, one bar segment per run of stops, the seven Comex questions
+// (lit where the step speaks to them), the source line and the n / N counter.
 import { CONCERNS, SECTIONS, MENTION } from "./data.js";
 import { list, view } from "./stops.js";
+
+const THEME_KEY = "deck-theme";
 
 export function createHud(stops, reduceMotion) {
   const el = {
@@ -14,9 +16,17 @@ export function createHud(stops, reduceMotion) {
     counter: document.querySelector(".hud-counter"),
   };
 
-  // Section bar: one equal segment per pillar
-  SECTIONS.forEach(() => {
+  // Section bar: one segment per run of consecutive stops in one section, as wide as its stops.
+  // Runs follow the page, not SECTIONS: an edition may open and close on the same section.
+  const runs = [];
+  stops.forEach((s) => {
+    const last = runs[runs.length - 1];
+    if (last && last.section === s.data.section) last.stops.push(s);
+    else runs.push({ section: s.data.section, stops: [s] });
+  });
+  runs.forEach((r) => {
     const li = document.createElement("li");
+    li.style.flexGrow = r.stops.length;
     li.innerHTML = "<span></span>";
     el.bar.appendChild(li);
   });
@@ -38,6 +48,28 @@ export function createHud(stops, reduceMotion) {
     });
   });
 
+  // The page's theme where a stop sets none: data-theme-default on the body, else light. A page with a
+  // .hud-theme switch lets the viewer flip it; the choice stays in this browser
+  const toggle = document.querySelector(".hud-theme");
+  let base = document.body.dataset.themeDefault || "light";
+  let last = null;
+  if (toggle) {
+    try {
+      base = localStorage.getItem(THEME_KEY) || base;
+    } catch {}
+    toggle.addEventListener("click", () => {
+      base = base === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem(THEME_KEY, base);
+      } catch {}
+      if (last) applyTheme(last);
+    });
+  }
+  function applyTheme(stop) {
+    document.body.dataset.theme = stop.data.theme || base;
+    toggle?.setAttribute("aria-pressed", String(document.body.dataset.theme !== "light"));
+  }
+
   // The block's screen rectangle, measured once after each change or resize (undefined = to measure)
   let box;
 
@@ -47,41 +79,56 @@ export function createHud(stops, reduceMotion) {
     const i = SECTIONS.findIndex((x) => x.id === stop.data.section);
     el.section.textContent = i >= 0 ? `${String(i + 1).padStart(2, "0")} · ${SECTIONS[i].name}` : "";
     el.part.textContent = shown.crumb || "";
-    // Earlier sections full, later ones empty; the current one fills stop by stop, beat by beat
-    const inSection = stops.filter((s) => s.data.section === stop.data.section);
-    const done = inSection.indexOf(stop) + (b + 1) / Math.max(1, stop.beats.length);
+    // Earlier runs full, later ones empty; the current one fills stop by stop, beat by beat
+    const r = runs.findIndex((x) => x.stops.includes(stop));
+    const done = runs[r].stops.indexOf(stop) + (b + 1) / Math.max(1, stop.beats.length);
     el.bar.querySelectorAll("li").forEach((li, k) => {
-      const fill = k < i ? 1 : k > i ? 0 : done / inSection.length;
+      const fill = k < r ? 1 : k > r ? 0 : done / runs[r].stops.length;
       li.firstChild.style.width = `${(fill * 100).toFixed(1)}%`;
     });
+    // Opening the deck on a stop shows the bar as it stands instead of filling it from zero
+    if (!el.bar.dataset.ready) requestAnimationFrame(() => requestAnimationFrame(() => (el.bar.dataset.ready = "1")));
 
-    // Lit: the questions this beat speaks to; done: the ones met earlier in the talk
+    // Lit: the questions this beat speaks to
     const now = new Set(list(shown.answers));
-    const met = new Set();
-    stops.slice(0, stop.index + 1).forEach((s) => {
-      const last = s === stop ? b - 1 : Math.max(0, s.beats.length - 1);
-      for (let k = 0; k <= last; k++) list(view(s, k).answers).forEach((c) => met.add(c));
-    });
     el.checklist.querySelectorAll("li").forEach((li) => {
       li.classList.toggle("is-now", now.has(li.dataset.concern));
-      li.classList.toggle("is-done", met.has(li.dataset.concern) && !now.has(li.dataset.concern));
     });
 
     el.source.textContent = [stop.data.source, MENTION].filter(Boolean).join(" · ");
     el.counter.textContent = `${stop.index + 1} / ${stops.length}`;
-    document.body.dataset.theme = stop.data.theme || "light";
+    last = stop;
+    applyTheme(stop);
     document.body.dataset.hud = shown.hud || "";
     box = undefined;
   }
 
-  // The top-left block as a screen rectangle grown by pad, or null when hidden
-  function rect(pad = 0) {
+  // The top-left block as a screen rectangle grown by pad, or null when hidden. A page marked
+  // data-hud-compact lets a tall card fold the questions away (tight: the block without them)
+  const compact = document.body.dataset.hudCompact !== undefined;
+  let questions = 0; // the questions' height and the gap above them, measured while they show
+  function rect(pad = 0, tight = !!document.body.dataset.hudTight) {
+    const folded = !!document.body.dataset.hudTight;
     if (box === undefined) {
       const r = el.nav.getBoundingClientRect();
+      if (!folded && document.body.dataset.hud !== "crumb") {
+        questions = el.checklist.getBoundingClientRect().height + parseFloat(getComputedStyle(el.nav).rowGap || 0);
+      }
       box = document.body.dataset.hud === "bare" ? null : { x: r.left, y: r.top, w: r.width, h: r.height };
     }
     if (!box) return null;
-    return { x: box.x - pad, y: box.y - pad, w: box.w + 2 * pad, h: box.h + 2 * pad };
+    const q = document.body.dataset.hud === "crumb" ? 0 : questions;
+    const h = tight === folded ? box.h : tight ? box.h - q : box.h + q;
+    return { x: box.x - pad, y: box.y - pad, w: box.w + 2 * pad, h: h + 2 * pad };
+  }
+
+  // Fold the questions away (or back) for the card on screen; only on pages that allow it
+  function tighten(on) {
+    on = compact && on && document.body.dataset.hud !== "crumb";
+    if (!!document.body.dataset.hudTight === on) return;
+    if (on) document.body.dataset.hudTight = "";
+    else delete document.body.dataset.hudTight;
+    box = undefined;
   }
 
   // Leaving the problem stop: its questions fly from the card into the checklist and stay there
@@ -101,6 +148,8 @@ export function createHud(stops, reduceMotion) {
   return {
     update,
     rect,
+    tighten,
+    compact,
     dock,
     // After a resize: measure the block again
     invalidate() {

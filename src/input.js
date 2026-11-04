@@ -16,6 +16,8 @@ export function readHash(count) {
 export function bindInput(deck) {
   document.addEventListener("keydown", (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    // A focused button (the theme switch) keeps Space and Enter for itself
+    if (e.target.closest?.("button") && [" ", "Enter"].includes(e.key)) return;
     if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) deck.next();
     else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) deck.previous();
     else if (e.key === "Home") deck.go(0);
@@ -24,14 +26,14 @@ export function bindInput(deck) {
     e.preventDefault();
   });
 
-  // Swipe left or right, or tap the left or right half of the screen; links and pinches pass through
+  // Swipe left or right, or tap the left or right half of the screen; links, buttons and pinches pass through
   let touch = null;
   let full = false;
   document.addEventListener(
     "touchstart",
     (e) => {
       const t = e.touches[0];
-      touch = e.touches.length === 1 && !e.target.closest("a") ? { x: t.clientX, y: t.clientY, at: performance.now() } : null;
+      touch = e.touches.length === 1 && !e.target.closest("a, button") ? { x: t.clientX, y: t.clientY, at: performance.now() } : null;
     },
     { passive: true },
   );
