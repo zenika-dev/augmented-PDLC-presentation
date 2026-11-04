@@ -5,6 +5,7 @@ import { gateAngle, polar } from "../geometry.js";
 import { buildWheel, ideaPosition } from "./wheel.js";
 import { buildBands, layoutBands } from "./bands.js";
 import { buildNexus, layoutNexus } from "./nexus.js";
+import { buildSets } from "./sets.js";
 import { applyFocus, focusTargets, energize, charge } from "../parts.js";
 import { showLabels, alignToArc, cullFaces, leader } from "../labels.js";
 import { ROLE } from "../render/lineart.js";
@@ -24,7 +25,8 @@ export function defaultState() {
   };
 }
 
-export function createEngine(scene) {
+// options.sets: also build the sets (the rocket and its rooms, src/engine/sets.js) for decks that visit them
+export function createEngine(scene, options = {}) {
   const root = new THREE.Group();
   scene.add(root);
 
@@ -32,6 +34,8 @@ export function createEngine(scene) {
   const stack = buildBands();
   const nexus = buildNexus();
   root.add(wheel, stack.group, nexus.group);
+  const sets = options.sets ? buildSets(root) : null;
+  if (sets) root.add(sets.group);
   const idea = wheel.getObjectByName("idea");
   roleLeaders(wheel, stack, nexus);
 
@@ -77,6 +81,7 @@ export function createEngine(scene) {
 
   return {
     root,
+    sets,
     get state() {
       return current;
     },

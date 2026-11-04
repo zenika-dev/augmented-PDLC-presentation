@@ -52,7 +52,8 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 - A client edition is a page in `editions/<name>/` (gitignored, never committed or pushed): its own `index.html`, theme, fonts, logo and a `<script type="application/json" id="edition">` block that replaces our sections, questions and shapes and patches gates, bands and layers (`applyEdition` in `src/data.js`). Client names and prose never go into `src/`, `css/` or `docs/`.
 - The engine reads its line-art colours from `--art-*` / `--art-dark-*` custom properties (`src/render/lineart.js`), so an edition repaints it from CSS. Without them the deck keeps its own look.
 - `npm run build` also builds each edition into `editions/<name>/dist/` (file name from `<meta name="single-file">`). The EN/FR parity check does not apply to editions.
-- Generic engine work for an edition happens on a feature branch, not on `main`. `editions/<name>/private-terms.txt` lists the words that must never reach the public repo.
+- Generic engine work for an edition happens on a feature branch, not on `main`.
+- Sets (`src/engine/sets.js`): the rocket around the engine, the cockpit, the classroom, mission control and the contract dial. A page whose stops carry `data-set` builds them; changing set is a cut, unless a portal joins the two sets (`PORTALS`: the camera flies to a shot on one side, the sets swap behind the fade, it flies on from the other). Sets also hang parts on the engine (capability cartridges, the model bay), shown through `data-parts`. Leader names on the sets come from the edition's `leads`. An edition can add a light/dark switch (`.hud-theme`, `data-theme-default`). The public decks never set `data-set`, so they do not build them. `editions/<name>/private-terms.txt` lists the words that must never reach the public repo.
 
 ## Checking changes
 

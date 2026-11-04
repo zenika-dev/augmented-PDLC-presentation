@@ -39,8 +39,9 @@ export function createCards(container, onResize) {
     box = null;
   }
 
-  // hud: the HUD block's screen rectangle (or null)
-  function place(stop, camera, hud) {
+  // hud: the HUD block's screen rectangle (or null); tight: the same block with its questions folded away,
+  // when the page allows it. Returns whether the card needs the block folded
+  function place(stop, camera, hud, tight = null) {
     const card = stop.card;
     if (!card) return;
     const w = window.innerWidth;
@@ -50,7 +51,7 @@ export function createCards(container, onResize) {
     let x;
     let y;
     if (stop.data.anchor === "screen") {
-      x = side === "left" ? w * 0.07 : w * 0.93 - cw;
+      x = side === "left" ? w * 0.07 : side === "center" ? (w - cw) / 2 : w * 0.93 - cw;
       y = stop.data.dock === "bottom" ? h * 0.88 - ch : (h - ch) / 2;
     } else {
       p.copy(stop.anchor).project(camera);
@@ -63,13 +64,18 @@ export function createCards(container, onResize) {
     const [sl, sr] = insets();
     x = Math.max(Math.max(w * MARGIN, sl + 8), Math.min(Math.min(w * (1 - MARGIN), w - sr - 8) - cw, x));
     y = Math.max(h * 0.12, Math.min(h * 0.88 - ch, y));
-    // Keep clear of the HUD block: below it if the card fits there, else to its right
+    // Keep clear of the HUD block: below it if the card fits there, else below the folded block, else to its right
+    let fold = false;
     if (hud && x < hud.x + hud.w && y < hud.y + hud.h) {
       if (hud.y + hud.h + ch < h * 0.9) y = hud.y + hud.h;
-      else x = hud.x + hud.w;
+      else if (tight && tight.y + tight.h + ch < h * 0.9) {
+        y = Math.max(y, tight.y + tight.h);
+        fold = true;
+      } else x = hud.x + hud.w;
     }
     card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
     box = { x, y, w: cw, h: ch };
+    return fold;
   }
 
   return {

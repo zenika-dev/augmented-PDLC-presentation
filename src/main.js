@@ -45,9 +45,11 @@ const scene = new THREE.Scene();
 scene.matrixWorldAutoUpdate = false;
 const lineart = createLineArt(renderer);
 const FOV = 22; // vertical, at 16:9 and wider
-const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 300);
+// A deck whose stops visit sets (data-set) needs the rocket and its rooms, and a deeper view to frame them
+const withSets = !!document.querySelector("#stops [data-set]");
+const camera = new THREE.PerspectiveCamera(FOV, 1, withSets ? 0.5 : 0.1, withSets ? 2000 : 300);
 
-const engine = createEngine(scene);
+const engine = createEngine(scene, { sets: withSets });
 const leaders = createLeaders(engine.root, labels.domElement);
 
 // ---------- deck ----------
@@ -74,8 +76,24 @@ let fromShot = shot;
 let toShot = shot;
 let shotName = null;
 let shotStarted = 0; // a beat may move the camera without replaying the stop's move
+let shotDuration = DURATION;
+// A portal between two sets (sets.js PORTALS): the camera first flies to the old set's portal shot, then the
+// sets swap behind the cut's fade and it flies on from the new set's portal shot. Each leg takes LEG ms.
+const LEG = 1100;
+let portal = null; // the move under way: { index, toBeat, via: { out, in } }
 
-function go(index, instant = false, toBeat = 0) {
+function landPortal() {
+  const { index, toBeat, via } = portal;
+  portal = null;
+  go(index, true, toBeat, true);
+  fromShot = resolveShot(via.in, layout);
+  shotStarted = performance.now();
+  shotDuration = LEG;
+}
+
+function go(index, instant = false, toBeat = 0, through = false) {
+  // A key during a portal's first leg lands the move at once
+  if (portal) landPortal();
   const stop = stops[Math.max(0, Math.min(stops.length - 1, index))];
   const b = Math.max(0, Math.min(stop.beats.length - 1, toBeat < 0 ? stop.beats.length - 1 : toBeat));
   if (stop === current) {
@@ -85,6 +103,23 @@ function go(index, instant = false, toBeat = 0) {
   const forward = !current || stop.index > current.index;
   const left = current;
   current = stop;
+  // Another set is a cut: no camera flight between places that do not share a space, unless a portal joins them
+  const cut = !!left && setOf(left) !== setOf(stop) && !engine.sets?.joined(setOf(left), setOf(stop));
+  const via = cut && !instant && !reduceMotion && engine.sets ? engine.sets.portal(setOf(left), setOf(stop)) : null;
+  if (via) {
+    current = left;
+    portal = { index: stop.index, toBeat: b, via };
+    fromShot = shot;
+    toShot = resolveShot(via.out, layout);
+    shotName = via.out;
+    shotStarted = performance.now();
+    shotDuration = LEG;
+    // The old stop's card and names step aside while the camera dives
+    cards.show({});
+    engine.labels([]);
+    labelsChanged = true;
+    return;
+  }
 
   // The running Idea's lap is folded into its start angle, so leaving a stop starts from where it is
   from = engine.state;
@@ -106,24 +141,56 @@ function go(index, instant = false, toBeat = 0) {
 
   cards.show(stop);
   stop.anchor.copy(anchorPoint(stop.data.anchor, layout));
-  started = instant || DURATION === 0 ? -Infinity : performance.now();
-  showBeat(b);
+  started = instant || cut || DURATION === 0 ? -Infinity : performance.now();
+  if (engine.sets) engine.sets.show(setOf(stop), list(stop.data.parts));
+  showBeat(b, true);
+  if (engine.sets && (instant || cut)) engine.sets.update(1);
+  if (cut) {
+    shot = fromShot = toShot;
+    shotStarted = -Infinity;
+    if (!reduceMotion || through) {
+      document.body.classList.add("is-cut");
+      requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove("is-cut")));
+    }
+  }
   if (left && !instant) hud.dock(left.card);
   pulseStart = performance.now() + DURATION;
 }
 
-// Focus, labels, role lens, pulse and HUD of the current beat
-function showBeat(b) {
+function setOf(stop) {
+  return stop.data.set || "rocket";
+}
+
+const numberOr = (value, fallback) => (value === undefined || value === "" ? fallback : Number(value));
+
+// Focus, labels, role lens, pulse and HUD of the current beat. Only the stop's own entry may snap the
+// camera (a cut or a jump); a beat always flies
+function showBeat(b, entering = false) {
   beat = b;
   const stop = current;
   shown = view(stop, b);
+  // A beat may raise or lower the Nexus tubes (data-telescope): the engine blends there from where it stands,
+  // the Idea carrying on from its current angle
+  const tel = numberOr(shown.telescope, stop.state.telescope);
+  if (to && to.telescope !== tel) {
+    if (!entering) {
+      from = engine.state;
+      if (!Number.isFinite(from.idea)) from.idea = 0;
+      run = 0;
+      started = DURATION === 0 ? -Infinity : performance.now();
+    }
+    to = { ...to, split: { ...to.split }, presence: { ...to.presence }, telescope: tel, idea: entering ? to.idea : from.idea };
+    layout = engine.set(to);
+    engine.set(from);
+  }
   // The camera heads for the beat's shot (the stop's unless the beat has its own)
   const name = shown.shot || "hero";
   if (name !== shotName) {
     shotName = name;
     fromShot = shot;
     toShot = resolveShot(name, layout);
-    shotStarted = started === -Infinity ? -Infinity : performance.now();
+    shotStarted = entering && started === -Infinity ? -Infinity : performance.now();
+    shotDuration = DURATION;
   }
   focusTags = shown.focus ? list(shown.focus) : null;
   contextTags = list(shown.context);
@@ -132,6 +199,16 @@ function showBeat(b) {
   engine.energize(list(shown.energize));
   engine.charge(list(shown.pulse), lags(shown.pulseLag));
   setPulseBand(...pulseBand(shown.pulseBand, layout));
+  if (engine.sets)
+    engine.sets.setTarget({
+      separate: numberOr(shown.separate, 0),
+      open: numberOr(shown.open, 0),
+      score: numberOr(shown.score, 0),
+      rule: numberOr(shown.rule, 100),
+      ceiling: numberOr(shown.ceiling, 100),
+      rings: list(shown.rings),
+      select: numberOr(shown.select, 1),
+    });
   hud.update(stop, b);
   if (stop.card) {
     stop.card.querySelectorAll("[data-beat]").forEach((el) => el.classList.toggle("is-now", Number(el.dataset.beat) === b));
@@ -250,10 +327,11 @@ function wake(ms) {
   awakeUntil = Math.max(awakeUntil, performance.now() + ms);
 }
 
-// The engine's palette follows the page theme: paper, or blueprint on the closing stop
+// The engine's palette follows the page theme: paper, or blueprint on the closing stop (and on dark pages)
 let theme = 0;
+const themeTarget = () => (["blueprint", "dark"].includes(document.body.dataset.theme) ? 1 : 0);
 function blendTheme() {
-  const target = document.body.dataset.theme === "blueprint" ? 1 : 0;
+  const target = themeTarget();
   if (theme === target) return false;
   theme = reduceMotion || Math.abs(target - theme) < 0.002 ? target : theme + (target - theme) * approach(3);
   lineart.setTheme(theme);
@@ -264,9 +342,10 @@ function frame(now) {
   requestAnimationFrame(frame);
   idle(now);
   const raw = Math.min(1, (now - started) / DURATION);
-  const camRaw = Math.min(1, (now - shotStarted) / DURATION);
+  if (portal && now - shotStarted >= shotDuration) landPortal();
+  const camRaw = Math.min(1, (now - shotStarted) / shotDuration);
   const live =
-    theme !== (document.body.dataset.theme === "blueprint" ? 1 : 0) ||
+    theme !== themeTarget() ||
     raw < 1 ||
     camRaw < 1 ||
     settling ||
@@ -286,6 +365,7 @@ function frame(now) {
     engine.flashGates(state.idea, now);
   }
   const fading = engine.focus(focusTags, reduceMotion ? 1 : approach(5), contextTags);
+  const posing = engine.sets ? engine.sets.update(reduceMotion ? 1 : approach(2.5)) : false;
   shot = blendShots(fromShot, toShot, ease(Number.isFinite(camRaw) ? camRaw : 1));
   camera.position.copy(shot.pos);
   camera.lookAt(shot.target);
@@ -301,10 +381,14 @@ function frame(now) {
   }
   alignRight(bandNames);
   engine.align(camera);
-  if (current) cards.place(current, camera, hud.rect(16));
+  if (current) {
+    // Measured unfolded: folding is decided again for each card
+    const fold = cards.place(current, camera, hud.rect(16, false), hud.compact ? hud.rect(16, true) : null);
+    hud.tighten(fold);
+  }
   const at = pins(phone.matches ? shown.leadAtPhone : shown.leadAt);
   const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, approach(13), Number(shown.leadDrop) || 0, at);
-  settling = fading || gliding;
+  settling = fading || gliding || posing;
 }
 
 // ---------- sizing ----------

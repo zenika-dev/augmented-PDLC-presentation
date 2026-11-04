@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { LOOP } from "./data.js";
 import { polar, phaseAngle, dropCentre, SPINE_POS, DROP, RAD } from "./geometry.js";
+import { SET_SHOTS } from "./engine/sets.js";
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -50,6 +51,8 @@ function bandHighShot(mid) {
 
 export function resolveShot(name, layout) {
   if (SHOTS[name]) return SHOTS[name];
+  const s = SET_SHOTS[name];
+  if (s) return orbit(s.az, s.elev, s.dist, s.at.clone().add(aside(s.az, s.k)), s.roll || 0);
   const [kind, id] = name.split(":");
   if (kind === "phase") return phaseShot(id);
   if (kind === "band") return bandShot(layout.bandMid[id]);

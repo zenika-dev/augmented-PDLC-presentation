@@ -48,6 +48,18 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   inset: 0;
 }
 
+/* A change of set (data-set) is a cut: the stage and its names drop out, then fade back in */
+#stage,
+.labels {
+  transition: opacity 0.45s ease;
+}
+
+.is-cut #stage,
+.is-cut .labels {
+  opacity: 0;
+  transition: none;
+}
+
 /* Above the HUD (z-index 10): leader names may cross its veil */
 .labels {
   z-index: 11;
@@ -135,6 +147,20 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 .label-spine {
   font-weight: 700;
   color: #4a4648;
+}
+
+/* Numbered pins on a set (src/engine/sets.js): a gold disc that names a card's tile */
+.label-pin .label-text {
+  display: grid;
+  place-items: center;
+  width: max(calc(18 * var(--fl)), calc(34 * var(--u)));
+  height: max(calc(18 * var(--fl)), calc(34 * var(--u)));
+  border: 2px solid var(--art-red-line, #9e1028);
+  border-radius: 50%;
+  background: var(--art-red-hi, #ff7c8a);
+  color: var(--dark);
+  font-size: max(calc(11 * var(--fl)), calc(19 * var(--u)));
+  font-weight: 800;
 }
 
 /* Leader lines: a dot on the part, a thin diagonal, the name on a horizontal tail (src/leaders.js) */
@@ -368,6 +394,100 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 
 .card-desc + .card-desc {
   margin-top: calc(8 * var(--u));
+}
+
+/* Highlight tiles: numbered items, in one column or a grid (tiles-2, tiles-3). With beats, the current tile
+   fills and the others step back; before the first lit beat, all read at full strength. tiles-plain: no number */
+.tiles {
+  --tile-bg: var(--light-grey);
+  --tile-border: transparent;
+  --tile-fg: var(--dark);
+  --tile-muted: var(--grey);
+  --tile-badge-bg: var(--dark);
+  --tile-badge-fg: var(--white);
+  --tile-on-bg: var(--dark);
+  --tile-on-border: var(--dark);
+  --tile-on-fg: var(--white);
+  --tile-on-muted: rgb(255 255 255 / 0.8);
+  --tile-on-badge-bg: var(--accent);
+  --tile-on-badge-fg: var(--white);
+  display: grid;
+  gap: calc(12 * var(--u));
+  margin: calc(20 * var(--u)) 0 0;
+  counter-reset: tile;
+  font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+}
+
+.tiles-2 { grid-template-columns: 1fr 1fr; }
+.tiles-3 { grid-template-columns: repeat(3, 1fr); }
+
+.tiles > * {
+  position: relative;
+  margin: 0;
+  padding: calc(14 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)) calc(64 * var(--u));
+  border: 1px solid var(--tile-border);
+  border-radius: 12px;
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+  transition: opacity 450ms ease, background-color 450ms ease, border-color 450ms ease, color 450ms ease;
+}
+
+.tiles > *::before {
+  counter-increment: tile;
+  content: counter(tile);
+  position: absolute;
+  top: calc(14 * var(--u));
+  left: calc(16 * var(--u));
+  display: grid;
+  place-items: center;
+  width: calc(34 * var(--u));
+  height: calc(34 * var(--u));
+  border-radius: 50%;
+  background: var(--tile-badge-bg);
+  color: var(--tile-badge-fg);
+  font-size: 0.85em;
+  font-weight: 800;
+  transition: background-color 450ms ease, color 450ms ease;
+}
+
+.tiles-plain > * { padding-left: calc(18 * var(--u)); }
+.tiles-plain > *::before { content: none; }
+
+.tiles dt {
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.tiles dd {
+  margin: calc(4 * var(--u)) 0 0;
+  font-size: 0.92em;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--tile-muted);
+}
+
+.tiles dd + dd { margin-top: calc(8 * var(--u)); }
+
+.tiles.beats:has(.is-now) > :not(.is-now) { opacity: 0.42; }
+
+/* Phones: no room for the whole list, so a lit tile shows alone */
+@media (pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px) {
+  .tiles.beats:has(.is-now) > :not(.is-now) { display: none; }
+  .tiles.beats:not(:has(.is-now)) dd { display: none; }
+}
+
+.tiles.beats > [data-beat].is-now {
+  font-weight: inherit;
+  border-color: var(--tile-on-border);
+  background: var(--tile-on-bg);
+  color: var(--tile-on-fg);
+}
+
+.tiles.beats > [data-beat].is-now dd { color: var(--tile-on-muted); }
+
+.tiles.beats > [data-beat].is-now::before {
+  background: var(--tile-on-badge-bg);
+  color: var(--tile-on-badge-fg);
 }
 
 .families + .card-desc {

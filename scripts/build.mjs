@@ -42,12 +42,12 @@ const options = {
 
 // Functions as replacements: the bundle holds "$" sequences that a replacement string would expand.
 // Paths resolve from the page's own folder, so an edition can link ../../css/ and its own theme.
-const MIME = { png: "image/png", svg: "image/svg+xml" };
+const MIME = { png: "image/png", svg: "image/svg+xml", jpg: "image/jpeg" };
 function single({ src, out, question }) {
   const at = (path) => join(dirname(src), path);
   let html = readFileSync(src, "utf8");
   // Images first: the bundle inlined below must not be scanned for src="…"
-  html = html.replace(/src="([^":]+\.(png|svg))"/g, (_, path, ext) => `src="data:${MIME[ext]};base64,${readFileSync(at(path)).toString("base64")}"`);
+  html = html.replace(/src="([^":]+\.(png|svg|jpg))"/g, (_, path, ext) => `src="data:${MIME[ext]};base64,${readFileSync(at(path)).toString("base64")}"`);
   html = html.replace(/<link rel="stylesheet" href="([^"]+\.css)">/g, (_, path) => `<style>\n${readFileSync(at(path), "utf8")}</style>`);
   html = html.replace(/<script src="([^"]+\.js)"><\/script>/g, (_, path) =>
     `<script>\n${readFileSync(at(path), "utf8").replace(/<\/script/gi, "<\\/script")}</script>`);
@@ -56,7 +56,7 @@ function single({ src, out, question }) {
   const concerns = (edition && JSON.parse(edition[1]).concerns) || CONCERNS;
   const questions = concerns.map((c) => `<li data-concern="${c.id}">${question(c)}</li>`).join("");
   html = html.replace('<ul class="concerns"></ul>', () => `<ul class="concerns">${questions}</ul>`);
-  const left = html.match(/(href|src)="(?!data:|https?:|mailto:|#)[^"]+\.(css|js|png|svg|woff2?)"/g);
+  const left = html.match(/(href|src)="(?!data:|https?:|mailto:|#)[^"]+\.(css|js|png|svg|jpg|woff2?)"/g);
   if (left) throw new Error(`${out}: not inlined: ${left.join(", ")}`);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);
