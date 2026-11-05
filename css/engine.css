@@ -662,7 +662,9 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 @media (prefers-reduced-motion: reduce) {
   .label,
   .card,
-  .backdrop {
+  .backdrop,
+  .reveal,
+  .reveal.is-shown {
     transition: none;
   }
 }

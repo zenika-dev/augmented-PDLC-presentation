@@ -34,8 +34,12 @@ export function createCards(container, onResize) {
     cards.push(card);
   }
 
+  // Cards off screen are out of reach too: no focus on their links, nothing read aloud
   function show(stop) {
-    cards.forEach((card) => card.classList.toggle("is-on", card === stop.card));
+    cards.forEach((card) => {
+      card.classList.toggle("is-on", card === stop.card);
+      card.inert = card !== stop.card;
+    });
     box = null;
   }
 

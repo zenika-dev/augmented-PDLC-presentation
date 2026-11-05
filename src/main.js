@@ -18,10 +18,12 @@ import { createCards } from "./cards.js";
 import { createHud } from "./hud.js";
 import { bindInput, readHash, hashOf } from "./input.js";
 
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Reduced motion: no camera moves, spin, run or pulse. Followed live, so turning it on mid-talk applies at once
+const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reduceMotion = motionQuery.matches;
 // Same test as css/tokens.css; read when used, so turning the phone is covered
 const phone = window.matchMedia("(pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px)");
-const DURATION = reduceMotion ? 0 : 1600;
+let DURATION = reduceMotion ? 0 : 1600;
 
 // ---------- renderers ----------
 
@@ -45,6 +47,9 @@ stage.appendChild(engraving.domElement);
 
 const labels = new CSS2DRenderer();
 labels.domElement.className = "labels";
+// The cards say it all: screen readers skip the drawing and the part names on it
+labels.domElement.setAttribute("aria-hidden", "true");
+stage.setAttribute("aria-hidden", "true");
 document.body.appendChild(labels.domElement);
 
 const scene = new THREE.Scene();
@@ -62,9 +67,10 @@ const leaders = createLeaders(engine.root, labels.domElement);
 // ---------- deck ----------
 
 const stops = readStops(document.getElementById("stops"));
-const cards = createCards(document.getElementById("cards"), () => wake(100));
+const cardLayer = document.getElementById("cards");
+const cards = createCards(cardLayer, () => wake(100));
 stops.forEach(cards.add);
-const hud = createHud(stops, reduceMotion);
+const hud = createHud(stops, () => reduceMotion);
 
 let current = null;
 let beat = 0;
@@ -272,11 +278,19 @@ function previous() {
 let spin = 0;
 let spinning = false;
 let last = 0;
-const SPIN_SPEED = reduceMotion ? 0 : 0.06; // radians per second
+let SPIN_SPEED = reduceMotion ? 0 : 0.06; // radians per second
 
 // Run: on stops with data-idea="run" the Idea travels its track, gates flashing as it passes
 let run = 0;
-const RUN_SPEED = reduceMotion ? 0 : 24; // degrees per second
+let RUN_SPEED = reduceMotion ? 0 : 24; // degrees per second
+
+motionQuery.addEventListener("change", (e) => {
+  reduceMotion = e.matches;
+  DURATION = reduceMotion ? 0 : 1600;
+  SPIN_SPEED = reduceMotion ? 0 : 0.06;
+  RUN_SPEED = reduceMotion ? 0 : 24;
+  wake(300);
+});
 
 // Seconds since the previous frame, capped so a hidden tab does not jump on return
 let dt = 0;
@@ -403,7 +417,7 @@ function frame(now) {
     hud.tighten(fold);
   }
   const at = pins(phone.matches ? shown.leadAtPhone : shown.leadAt);
-  const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, approach(13), Number(shown.leadDrop) || 0, at);
+  const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, reduceMotion ? 1 : approach(13), Number(shown.leadDrop) || 0, at);
   settling = fading || gliding || posing;
 }
 
@@ -453,6 +467,21 @@ if (document.fonts) {
     wake(300);
   });
 }
+
+// Printing gives the reading version: every card back in its stop, in page order (css/fallback.css)
+window.addEventListener("beforeprint", () => {
+  stops.forEach((s) => {
+    if (!s.card) return;
+    s.card.style.transform = ""; // placed again on the next frame
+    s.el.appendChild(s.card);
+  });
+  document.documentElement.className = "no-js";
+});
+window.addEventListener("afterprint", () => {
+  document.documentElement.className = "js";
+  stops.forEach((s) => s.card && cardLayer.appendChild(s.card));
+  wake(300);
+});
 
 // ---------- start ----------
 

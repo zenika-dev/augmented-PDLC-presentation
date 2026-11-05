@@ -1,10 +1,11 @@
 // The fixed HUD: Section › part breadcrumb, one bar segment per run of stops, the seven Comex questions
 // (lit where the step speaks to them), the source line and the n / N counter.
-import { CONCERNS, SECTIONS, MENTION } from "./data.js";
+import { CONCERNS, SECTIONS, MENTION, LANG } from "./data.js";
 import { list, view } from "./stops.js";
 
 const THEME_KEY = "deck-theme";
 
+// reduceMotion: a function, the setting can change while the deck runs
 export function createHud(stops, reduceMotion) {
   const el = {
     nav: document.querySelector(".hud-nav"),
@@ -15,6 +16,14 @@ export function createHud(stops, reduceMotion) {
     source: document.querySelector(".hud-source"),
     counter: document.querySelector(".hud-counter"),
   };
+
+  // Screen readers hear one line per step, its number and its card's title, not the HUD's every change
+  const announce = document.createElement("p");
+  announce.className = "sr-only";
+  announce.setAttribute("aria-live", "polite");
+  document.body.appendChild(announce);
+  const stepLine = (n, title) =>
+    LANG === "fr" ? `Étape ${n} sur ${stops.length}${title ? `\u202f: ${title}` : ""}` : `Step ${n} of ${stops.length}${title ? `: ${title}` : ""}`;
 
   // Section bar: one segment per run of consecutive stops in one section, as wide as its stops.
   // Runs follow the page, not SECTIONS: an edition may open and close on the same section.
@@ -93,10 +102,16 @@ export function createHud(stops, reduceMotion) {
     const now = new Set(list(shown.answers));
     el.checklist.querySelectorAll("li").forEach((li) => {
       li.classList.toggle("is-now", now.has(li.dataset.concern));
+      if (now.has(li.dataset.concern)) li.setAttribute("aria-current", "true");
+      else li.removeAttribute("aria-current");
     });
 
     el.source.textContent = [stop.data.source, MENTION].filter(Boolean).join(" · ");
     el.counter.textContent = `${stop.index + 1} / ${stops.length}`;
+    if (stop !== last) {
+      const title = stop.card?.querySelector("h1, h2")?.textContent.replace(/\s+/g, " ").trim();
+      announce.textContent = stepLine(stop.index + 1, title);
+    }
     last = stop;
     applyTheme(stop);
     document.body.dataset.hud = shown.hud || "";
@@ -134,7 +149,7 @@ export function createHud(stops, reduceMotion) {
   // Leaving the problem stop: its questions fly from the card into the checklist and stay there
   function dock(card) {
     const src = card && card.querySelector(".is-shown .concerns");
-    if (!src || reduceMotion || document.body.dataset.hud) return;
+    if (!src || reduceMotion() || document.body.dataset.hud) return;
     el.checklist.querySelectorAll("li").forEach((li, k) => {
       const item = src.querySelector(`[data-concern="${li.dataset.concern}"]`);
       if (!item) return;

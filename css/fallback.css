@@ -1,5 +1,6 @@
 /* Reading version: when scripts don't run (mail previewers such as Quick Look), the stops' cards
-   become one scrolling page. The head script sets html.js before first paint, so the deck never shows this. */
+   become one scrolling page. The head script sets html.js before first paint, so the deck never shows this.
+   The deck also falls back to it without WebGL, and while printing (src/main.js puts html.no-js back). */
 
 .nojs-banner,
 .nojs-footer {
@@ -14,6 +15,7 @@ html.no-js body {
 
 html.no-js #stage,
 html.no-js #cards,
+html.no-js .labels,
 html.no-js .hud,
 html.no-js .rotate,
 html.no-js .backdrop:not(.backdrop-light) {
@@ -124,5 +126,16 @@ html.no-js .nojs-footer {
 @media (max-width: 480px) {
   html.no-js .families-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Printing: the reading version without its "open this file" banner, one card per block */
+@media print {
+  html.no-js .nojs-banner {
+    display: none;
+  }
+
+  html.no-js .card {
+    break-inside: avoid;
   }
 }
