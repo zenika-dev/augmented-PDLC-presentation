@@ -46,7 +46,14 @@ if (terms.length) {
       if (!text.includes("\0")) hits(text, (i) => `${f}:${i + 1}`);
     });
   const base = git("rev-parse", "--verify", "--quiet", "origin/main").trim();
-  if (base) hits(git("log", "-p", "--format=commit %h %s", `${base}..HEAD`), (i) => `unpushed commits, patch line ${i + 1}`);
+  // Whole messages, not only subjects: a body can quote a client as easily as a patch
+  if (base) hits(git("log", "-p", "--format=commit %h%n%B", `${base}..HEAD`), (i) => `unpushed commits, log line ${i + 1}`);
+  else console.warn("check:private: no origin/main, unpushed commits not checked (git fetch first)");
+}
+
+// The committed bundle is the minified one: a watch build (npm run dev) carries an inline source map
+if (existsSync("dist/deck.js") && readFileSync("dist/deck.js", "utf8").includes("sourceMappingURL=")) {
+  problems.push("dist/deck.js is a dev build (source map inside): run npm run build");
 }
 
 if (problems.length) {

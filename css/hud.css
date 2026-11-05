@@ -1,6 +1,17 @@
 /* Fixed HUD: replaces the per-slide kicker, logo, footer and page number.
    Sized in viewport units of a 1920×1080 reference so it scales like the deck. */
 
+/* Read by screen readers only (the step announcement, src/hud.js) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .hud {
   position: fixed;
   inset: 0;

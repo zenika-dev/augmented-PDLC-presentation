@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join } from "node:path";
 import { CONCERNS } from "../src/data.js";
 import { FR } from "../src/data.fr.js";
+import { lintStops } from "./lint-stops.mjs";
 
 const watch = process.argv.includes("--watch");
 const serve = process.argv.includes("--serve");
@@ -23,8 +24,8 @@ function editions() {
     .filter((d) => d.isDirectory() && existsSync(join("editions", d.name, "index.html")))
     .map((d) => {
       const src = join("editions", d.name, "index.html");
-      const file = readFileSync(src, "utf8").match(/<meta name="single-file" content="([^"]+)">/)?.[1] ?? `${d.name}.html`;
-      return { src, out: join("editions", d.name, "dist", file), question: (c) => c.question };
+      const file = readFileSync(src, "utf8").match(/<meta\b(?=[^>]*\bname="single-file")[^>]*\bcontent="([^"]+)"/)?.[1] ?? `${d.name}.html`;
+      return { src, out: join("editions", d.name, "dist", file), question: (c) => c.question, edition: true };
     });
 }
 
@@ -42,22 +43,44 @@ const options = {
 
 // Functions as replacements: the bundle holds "$" sequences that a replacement string would expand.
 // Paths resolve from the page's own folder, so an edition can link ../../css/ and its own theme.
-const MIME = { png: "image/png", svg: "image/svg+xml", jpg: "image/jpeg" };
-function single({ src, out, question }) {
+const MIME = { png: "image/png", svg: "image/svg+xml", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", gif: "image/gif" };
+
+// The page's #edition block, whatever the order of its attributes; a page under editions/ must have one
+function readEdition(src, html, required) {
+  const block = html.match(/<script\b(?=[^>]*\bid="edition")[^>]*>([\s\S]*?)<\/script>/);
+  if (!block) {
+    if (required) throw new Error(`${src}: no <script type="application/json" id="edition"> block`);
+    return null;
+  }
+  try {
+    return JSON.parse(block[1]);
+  } catch (e) {
+    throw new Error(`${src}: the #edition block is not valid JSON: ${e.message}`);
+  }
+}
+
+function single({ src, out, question, edition: isEdition }) {
   const at = (path) => join(dirname(src), path);
   let html = readFileSync(src, "utf8");
   // Images first: the bundle inlined below must not be scanned for src="…"
-  html = html.replace(/src="([^":]+\.(png|svg|jpg))"/g, (_, path, ext) => `src="data:${MIME[ext]};base64,${readFileSync(at(path)).toString("base64")}"`);
+  const edition = readEdition(src, html, isEdition);
+  const lint = lintStops(src, html, edition);
+  if (lint.length) throw new Error(`stop attributes that name nothing:\n  ${lint.join("\n  ")}`);
+  html = html.replace(/src="([^":]+\.(png|svg|jpe?g|webp|gif))"/g, (_, path, ext) => `src="data:${MIME[ext]};base64,${readFileSync(at(path)).toString("base64")}"`);
   html = html.replace(/<link rel="stylesheet" href="([^"]+\.css)">/g, (_, path) => `<style>\n${readFileSync(at(path), "utf8")}</style>`);
   html = html.replace(/<script src="([^"]+\.js)"><\/script>/g, (_, path) =>
     `<script>\n${readFileSync(at(path), "utf8").replace(/<\/script/gi, "<\\/script")}</script>`);
   // The problem card's questions, written in so the reading version (no scripts) shows them too
-  const edition = html.match(/<script type="application\/json" id="edition">([\s\S]*?)<\/script>/);
-  const concerns = (edition && JSON.parse(edition[1]).concerns) || CONCERNS;
+  const concerns = edition?.concerns || CONCERNS;
   const questions = concerns.map((c) => `<li data-concern="${c.id}">${question(c)}</li>`).join("");
   html = html.replace('<ul class="concerns"></ul>', () => `<ul class="concerns">${questions}</ul>`);
-  const left = html.match(/(href|src)="(?!data:|https?:|mailto:|#)[^"]+\.(css|js|png|svg|jpg|woff2?)"/g);
-  if (left) throw new Error(`${out}: not inlined: ${left.join(", ")}`);
+  // Anything still pointing at a local file would break in the mailed copy
+  const left = [
+    ...(html.match(/(href|src|poster)="(?!data:|https?:|mailto:|#)[^"]+\.(css|js|png|svg|jpe?g|webp|gif|woff2?)"/g) || []),
+    ...(html.match(/srcset="[^"]*"/g) || []),
+    ...(html.match(/url\((?!\s*["']?(data:|https?:|#))[^)]*\)/g) || []),
+  ];
+  if (left.length) throw new Error(`${out}: not inlined: ${left.join(", ")}`);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);
   console.log(`  ${out}  ${(html.length / 1024).toFixed(0)}kb`);
@@ -66,14 +89,16 @@ function single({ src, out, question }) {
 // The French page must keep the English one's stops, beats and attributes; only the prose and data-crumb differ
 function parity() {
   const shape = (src) => {
-    const stops = readFileSync(src, "utf8").split('<div id="stops">')[1].split('<div class="hud"')[0];
-    return [...stops.matchAll(/<(section|div|span)\b[^>]*\b(class="(stop|beat)"|data-beat|data-from)[^>]*>/g)]
+    const stops = readFileSync(src, "utf8").split('<div id="stops">')[1]?.split('<div class="hud"')[0];
+    if (!stops) throw new Error(`${src}: no <div id="stops">`);
+    return [...stops.matchAll(/<(section|div|span)\b[^>]*\b(class="[^"]*\b(stop|beat)\b[^"]*"|data-beat|data-from)[^>]*>/g)]
       .map((m) => m[0].replace(/\sdata-crumb="[^"]*"/g, "").replace(/\s+/g, " "));
   };
   const [en, fr] = PAGES.map((p) => shape(p.src));
-  const i = en.findIndex((tag, k) => tag !== fr[k]);
-  if (i >= 0 || en.length !== fr.length) {
-    throw new Error(`index.fr.html drifted from index.html at tag ${i >= 0 ? i : Math.min(en.length, fr.length)}:\n  en ${en[i] ?? "(none)"}\n  fr ${fr[i] ?? "(none)"}`);
+  let i = en.findIndex((tag, k) => tag !== fr[k]);
+  if (i < 0 && en.length !== fr.length) i = Math.min(en.length, fr.length);
+  if (i >= 0) {
+    throw new Error(`index.fr.html drifted from index.html at tag ${i}:\n  en ${en[i] ?? "(none)"}\n  fr ${fr[i] ?? "(none)"}`);
   }
 }
 
@@ -87,5 +112,16 @@ if (watch) {
 } else {
   parity();
   await esbuild.build(options);
-  [...PAGES, ...editions()].forEach(single);
+  PAGES.forEach(single);
+  // A broken edition reports its error without blocking the public files
+  let failed = 0;
+  editions().forEach((page) => {
+    try {
+      single(page);
+    } catch (e) {
+      failed++;
+      console.error(`  ${page.src}: ${e.message}`);
+    }
+  });
+  if (failed) process.exitCode = 1;
 }

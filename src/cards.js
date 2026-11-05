@@ -20,9 +20,15 @@ export function createCards(container, onResize) {
   const probe = document.createElement("div");
   probe.style.cssText = "position:fixed;visibility:hidden;padding:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)";
   document.body.appendChild(probe);
+  // Read once per size, not per frame: turning the phone fires resize
+  let sides = null;
+  window.addEventListener("resize", () => (sides = null));
   const insets = () => {
-    const s = getComputedStyle(probe);
-    return [parseFloat(s.paddingLeft) || 0, parseFloat(s.paddingRight) || 0];
+    if (!sides) {
+      const s = getComputedStyle(probe);
+      sides = [parseFloat(s.paddingLeft) || 0, parseFloat(s.paddingRight) || 0];
+    }
+    return sides;
   };
 
   function add(stop) {
@@ -34,8 +40,12 @@ export function createCards(container, onResize) {
     cards.push(card);
   }
 
+  // Cards off screen are out of reach too: no focus on their links, nothing read aloud
   function show(stop) {
-    cards.forEach((card) => card.classList.toggle("is-on", card === stop.card));
+    cards.forEach((card) => {
+      card.classList.toggle("is-on", card === stop.card);
+      card.inert = card !== stop.card;
+    });
     box = null;
   }
 

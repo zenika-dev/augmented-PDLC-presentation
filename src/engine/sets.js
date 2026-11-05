@@ -107,6 +107,9 @@ const PAIRS = [{ sets: ["classroom", "mission"], pivot: -10.8 }];
 
 // Camera shots on the sets: orbit azimuth, elevation, distance and roll around a point `at`, moved sideways by k
 // (k < 0: the subject sits right of centre, leaving the left of the screen to a card; about -0.14 × distance)
+// The sets a stop can show (data-set)
+export const SET_NAMES = ["rocket", "cockpit", "classroom", "mission", "contract"];
+
 export const SET_SHOTS = {
   pad: { az: 150, elev: 6, dist: 320, k: -44, at: v(0, 16, 0) },
   "rocket-flight": { az: 120, elev: 18, dist: 235, k: -33, at: v(0, 30, 0), roll: -34 },

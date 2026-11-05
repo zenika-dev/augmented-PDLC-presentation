@@ -52,13 +52,25 @@ export function showLabels(root, groups) {
 }
 
 // Names stacked down one side of the engine share one right edge on screen, whatever the camera's tilt:
-// the text moves inside its label, so the label itself stays where CSS2D put it
-export function alignRight(els) {
-  const shown = els.filter((el) => el.style.display !== "none");
-  if (!shown.length) return;
-  const edges = shown.map((el) => el.getBoundingClientRect().right);
-  const edge = Math.min(...edges);
-  shown.forEach((el, i) => (el.firstChild.style.transform = `translateX(${(edge - edges[i]).toFixed(1)}px)`));
+// the text moves inside its label, so the label itself stays where CSS2D put it.
+// Two steps so a frame reads layout once: rightEdges() only reads, alignRight() only writes
+export function rightEdges(els) {
+  return els.filter((el) => el.style.display !== "none").map((el) => [el, el.getBoundingClientRect().right]);
+}
+
+// Returns how far each name's text moved since the last call, for boxes read before the move
+const shifted = new WeakMap();
+export function alignRight(edges) {
+  const moved = new Map();
+  if (!edges.length) return moved;
+  const edge = Math.min(...edges.map(([, right]) => right));
+  edges.forEach(([el, right]) => {
+    const x = Number((edge - right).toFixed(1));
+    moved.set(el, x - (shifted.get(el) || 0));
+    shifted.set(el, x);
+    el.firstChild.style.transform = `translateX(${x.toFixed(1)}px)`;
+  });
+  return moved;
 }
 
 // Labels marked with userData.arc = { r, a, y } are written along that arc, like names on a map:

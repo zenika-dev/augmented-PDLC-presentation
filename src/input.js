@@ -5,10 +5,10 @@ export function hashOf(index, beat) {
   return `#${index + 1}${beat > 0 ? `.${beat + 1}` : ""}`;
 }
 
-// [stop index, beat index] from the hash; anything unknown lands on the first stop
+// [stop index, beat index] from the hash; past the end lands on the last stop, anything unknown on the first
 export function readHash(count) {
   const [n, b] = location.hash.slice(1).split(".").map(Number);
-  const i = Number.isInteger(n) && n >= 1 && n <= count ? n - 1 : 0;
+  const i = Number.isInteger(n) && n >= 1 ? Math.min(n, count) - 1 : 0;
   return [i, Number.isInteger(b) && b >= 1 ? b - 1 : 0];
 }
 
@@ -16,8 +16,8 @@ export function readHash(count) {
 export function bindInput(deck) {
   document.addEventListener("keydown", (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
-    // A focused button (the theme and full screen switches) keeps Space and Enter for itself
-    if (e.target.closest?.("button") && [" ", "Enter"].includes(e.key)) return;
+    // A focused link or button (the closing links, the theme and full screen switches) keeps Space and Enter for itself
+    if (e.target.closest?.("a, button") && [" ", "Enter"].includes(e.key)) return;
     // Esc leaves full screen; browsers mostly do it themselves, this covers hosts that pass the key on
     if (e.key === "Escape" && document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
