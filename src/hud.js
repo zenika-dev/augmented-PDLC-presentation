@@ -136,7 +136,9 @@ export function createHud(stops, reduceMotion) {
     const src = card && card.querySelector(".is-shown .concerns");
     if (!src || reduceMotion || document.body.dataset.hud) return;
     el.checklist.querySelectorAll("li").forEach((li, k) => {
-      const a = src.querySelector(`[data-concern="${li.dataset.concern}"]`).getBoundingClientRect();
+      const item = src.querySelector(`[data-concern="${li.dataset.concern}"]`);
+      if (!item) return;
+      const a = item.getBoundingClientRect();
       const b = li.getBoundingClientRect();
       li.animate(
         [{ transform: `translate(${a.left - b.left}px, ${a.top - b.top}px)`, opacity: 0.5 }, { transform: "none", opacity: 1 }],

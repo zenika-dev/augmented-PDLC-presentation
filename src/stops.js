@@ -78,7 +78,7 @@ export function pins(value) {
   const out = {};
   list(value).forEach((pair) => {
     const [key, v] = pair.split("=");
-    out[key] = v.split("/").map(Number);
+    if (v) out[key] = v.split("/").map(Number);
   });
   return out;
 }

@@ -173,7 +173,14 @@ export const MENTION = EDITION?.mention ?? (LANG === "fr" ? FR.mention : "© ZEN
 
 function readEdition() {
   const el = typeof document !== "undefined" && document.getElementById("edition");
-  return el ? JSON.parse(el.textContent) : null;
+  if (!el) return null;
+  try {
+    return JSON.parse(el.textContent);
+  } catch (error) {
+    // The deck still runs, on our data, rather than not at all
+    console.error("The edition block (#edition) is not valid JSON:", error.message);
+    return null;
+  }
 }
 
 export function applyEdition(e) {
@@ -182,9 +189,17 @@ export function applyEdition(e) {
   replace(CONCERNS, e.concerns);
   replace(SHAPES, e.shapes);
   GATES.forEach((g) => Object.assign(g, e.gates?.[g.id]));
-  if (e.bandOrder) replace(BANDS, e.bandOrder.map((id) => BANDS.find((b) => b.id === id)));
+  if (e.bandOrder) {
+    const ids = BANDS.map((b) => b.id);
+    if (e.bandOrder.length !== ids.length || !ids.every((id) => e.bandOrder.includes(id))) {
+      throw new Error(`Edition bandOrder must list each band once: ${ids.join(", ")}`);
+    }
+    replace(BANDS, e.bandOrder.map((id) => BANDS.find((b) => b.id === id)));
+  }
   BANDS.forEach((b) => {
     Object.assign(b, e.bands?.[b.id]);
     b.layers.forEach((l) => Object.assign(l, e.layers?.[l.id]));
   });
+  // L11 is the spine, outside the bands
+  Object.assign(SPINE, e.layers?.[SPINE.id]);
 }

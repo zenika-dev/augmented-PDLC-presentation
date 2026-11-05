@@ -27,7 +27,14 @@ const DURATION = reduceMotion ? 0 : 1600;
 
 const stage = document.getElementById("stage");
 // No MSAA: the canvas only ever receives the full-screen composite
-const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
+} catch (error) {
+  // No WebGL (a blocked GPU, some previewers): the reading version, as with scripts off
+  document.documentElement.className = "no-js";
+  throw error;
+}
 stage.appendChild(renderer.domElement);
 
 // Engraved names live in 3D on the parts' faces. The label layer sits outside the stage, above the HUD,
@@ -221,7 +228,13 @@ function showBeat(b, entering = false) {
 // Card items marked data-from show from their beat on. On phones they take the place of the text above
 // them (css/engine.css): the text fades out, the two swap, the new content fades in
 const SWAP_MS = 200;
+// A quicker next beat or stop cancels the pending swap rather than racing it
+let swapTimer = 0;
+let swapping = null;
 function revealFrom(stop, b) {
+  clearTimeout(swapTimer);
+  swapping?.classList.remove("is-swapping");
+  swapping = null;
   const items = [...stop.card.querySelectorAll("[data-from]")];
   const show = (k) => items.forEach((el) => el.classList.toggle("is-shown", k >= Number(el.dataset.from)));
   const changes = items.some((el) => el.classList.contains("is-shown") !== b >= Number(el.dataset.from));
@@ -230,7 +243,9 @@ function revealFrom(stop, b) {
     return;
   }
   stop.card.classList.add("is-swapping");
-  setTimeout(() => {
+  swapping = stop.card;
+  swapTimer = setTimeout(() => {
+    swapping = null;
     if (current === stop) show(beat);
     // Two frames: the swapped content first lays out transparent, then fades in
     requestAnimationFrame(() => requestAnimationFrame(() => stop.card.classList.remove("is-swapping")));
@@ -341,9 +356,10 @@ function blendTheme() {
 function frame(now) {
   requestAnimationFrame(frame);
   idle(now);
-  const raw = Math.min(1, (now - started) / DURATION);
+  // The frame's time can be a hair older than a key press's performance.now(): never below 0
+  const raw = Math.max(0, Math.min(1, (now - started) / DURATION));
   if (portal && now - shotStarted >= shotDuration) landPortal();
-  const camRaw = Math.min(1, (now - shotStarted) / shotDuration);
+  const camRaw = Math.max(0, Math.min(1, (now - shotStarted) / shotDuration));
   const live =
     theme !== themeTarget() ||
     raw < 1 ||
@@ -398,7 +414,7 @@ function resize() {
   const h = window.innerHeight;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(w, h);
-  lineart.setSize(w, h);
+  lineart.setSize();
   labels.setSize(w, h);
   engraving.setSize(w, h);
   // Narrower than 16:9 (16:10 laptops) the cards scale on the width (--u): the view keeps the 16:9 width too
@@ -411,6 +427,9 @@ function resize() {
 }
 window.addEventListener("resize", resize);
 resize();
+
+// three restores its buffers after a lost GPU context; the loop only draws when woken
+renderer.domElement.addEventListener("webglcontextrestored", () => wake(500));
 
 // Moving the window between a Retina laptop and a 1x projector changes the pixel ratio without always
 // firing resize: watch the current ratio and size again when it changes

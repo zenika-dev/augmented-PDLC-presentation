@@ -207,9 +207,11 @@ export function createLineArt(renderer, { stipple } = {}) {
   );
   const postCam = new THREE.Camera();
 
-  function setSize(w, h) {
+  // Call after renderer.setSize: the G-buffer matches the canvas pixel for pixel (three floors w × dpr)
+  const drawing = new THREE.Vector2();
+  function setSize() {
     const dpr = renderer.getPixelRatio();
-    const W = Math.round(w * dpr), H = Math.round(h * dpr);
+    const { x: W, y: H } = renderer.getDrawingBufferSize(drawing);
     gbuf.setSize(W, H);
     uniforms.res.value.set(W, H);
     uniforms.px.value = dpr;
