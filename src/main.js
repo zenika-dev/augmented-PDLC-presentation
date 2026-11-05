@@ -1,29 +1,29 @@
-// Entry point: the renderers, the engine, and the deck controller (stops and beats, the frame loop).
-// A stop may hold beats (<div class="beat" data-…>): substeps that override its focus, labels and pulse
-// without moving the camera. Next and previous walk the beats before leaving the stop.
-//   stops.js  reads stops and beats from index.html     hud.js    breadcrumb, bar, questions, counter
-//   cards.js  places the annotation cards               input.js  keys, touch, the #n.b hash
+// Entry point: the renderers, the engine and the frame loop, which draws the way to where the deck is heading.
+//   deck.js   stops and beats, the moves between them   motion.js  idle spin, running Idea, pulse, frame clock
+//   stops.js  reads stops and beats from index.html     hud.js     breadcrumb, bar, questions, counter
+//   cards.js  places the annotation cards               input.js   keys, touch, the #n.b hash
 import * as THREE from "three";
 import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 import { CSS3DRenderer } from "three/addons/renderers/CSS3DRenderer.js";
 import { BANDS } from "./data.js";
 import { RAD } from "./geometry.js";
 import { createEngine, blendState } from "./engine/index.js";
-import { resolveShot, blendShots, ease } from "./shots.js";
-import { createLineArt, setPulse, setPulseBand } from "./render/lineart.js";
+import { blendShots, ease } from "./shots.js";
+import { createLineArt } from "./render/lineart.js";
 import { createLeaders } from "./leaders.js";
 import { alignRight, rightEdges } from "./labels.js";
-import { readStops, view, list, ideaAngle, anchorPoint, lags, pins, pulseBand } from "./stops.js";
+import { readStops, pins } from "./stops.js";
 import { createCards } from "./cards.js";
 import { createHud } from "./hud.js";
-import { bindInput, readHash, hashOf } from "./input.js";
+import { bindInput, readHash } from "./input.js";
+import { createDeck } from "./deck.js";
+import { createMotion } from "./motion.js";
 
 // Reduced motion: no camera moves, spin, run or pulse. Followed live, so turning it on mid-talk applies at once
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-let reduceMotion = motionQuery.matches;
+const prefs = { reduced: motionQuery.matches };
 // Same test as css/tokens.css; read when used, so turning the phone is covered
 const phone = window.matchMedia("(pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px)");
-let DURATION = reduceMotion ? 0 : 1600;
 
 // ---------- renderers ----------
 
@@ -70,265 +70,18 @@ const stops = readStops(document.getElementById("stops"));
 const cardLayer = document.getElementById("cards");
 const cards = createCards(cardLayer, () => wake(100));
 stops.forEach(cards.add);
-const hud = createHud(stops, () => reduceMotion);
-
-let current = null;
-let beat = 0;
-let shown = {}; // the current beat's attributes (view)
-let focusTags = null;
-let contextTags = [];
-let plainLabels = []; // labels on screen that leader names keep clear of
-let bandNames = []; // domain names on screen, kept in one column
-let labelsChanged = false; // CSS2D adds a label to the page on its first render: list them after it
-let layout = null; // where the bands land on the current stop
-let from = null;
-let to = null;
-let started = 0;
-let shot = { pos: new THREE.Vector3(0, 30, 0.01), target: new THREE.Vector3() };
-let fromShot = shot;
-let toShot = shot;
-let shotName = null;
-let shotStarted = 0; // a beat may move the camera without replaying the stop's move
-let shotDuration = DURATION;
-// A portal between two sets (sets.js PORTALS): the camera first flies to the old set's portal shot, then the
-// sets swap behind the cut's fade and it flies on from the new set's portal shot. Each leg takes LEG ms.
-const LEG = 1100;
-let portal = null; // the move under way: { index, toBeat, via: { out, in } }
-
-function landPortal() {
-  const { index, toBeat, via } = portal;
-  portal = null;
-  go(index, true, toBeat, true);
-  fromShot = resolveShot(via.in, layout);
-  shotStarted = performance.now();
-  shotDuration = LEG;
-}
-
-function go(index, instant = false, toBeat = 0, through = false) {
-  wake(100);
-  // A key during a portal's first leg lands the move at once
-  if (portal) landPortal();
-  const stop = stops[Math.max(0, Math.min(stops.length - 1, index))];
-  const b = Math.max(0, Math.min(stop.beats.length - 1, toBeat < 0 ? stop.beats.length - 1 : toBeat));
-  if (stop === current) {
-    if (b !== beat) showBeat(b);
-    return;
-  }
-  const forward = !current || stop.index > current.index;
-  const left = current;
-  current = stop;
-  // Another set is a cut: no camera flight between places that do not share a space, unless a portal joins them
-  const cut = !!left && setOf(left) !== setOf(stop) && !engine.sets?.joined(setOf(left), setOf(stop));
-  const via = cut && !instant && !reduceMotion && engine.sets ? engine.sets.portal(setOf(left), setOf(stop)) : null;
-  if (via) {
-    current = left;
-    portal = { index: stop.index, toBeat: b, via };
-    fromShot = shot;
-    toShot = resolveShot(via.out, layout);
-    shotName = via.out;
-    shotStarted = performance.now();
-    shotDuration = LEG;
-    // The old stop's card and names step aside while the camera dives
-    cards.show({});
-    engine.labels([]);
-    labelsChanged = true;
-    return;
-  }
-
-  // The running Idea's lap is folded into its start angle, so leaving a stop starts from where it is
-  from = engine.state;
-  if (!Number.isFinite(from.idea)) from.idea = 0;
-  run = 0;
-  to = { ...stop.state, split: { ...stop.state.split }, presence: { ...stop.state.presence } };
-
-  // The Idea only moves clockwise going forward, and back the same way
-  const target = ideaAngle(stop.data.idea);
-  let ideaTo = target === null ? from.idea : target;
-  if (forward && ideaTo < from.idea - 0.01) ideaTo += 360 * Math.ceil((from.idea - ideaTo) / 360);
-  if (!forward && ideaTo > from.idea + 0.01) ideaTo -= 360 * Math.ceil((ideaTo - from.idea) / 360);
-  to.idea = ideaTo;
-
-  // Shot and card anchor depend on where the bands land at the end of the move
-  layout = engine.set(to);
-  engine.set(from);
-  shotName = null;
-
-  cards.show(stop);
-  stop.anchor.copy(anchorPoint(stop.data.anchor, layout));
-  started = instant || cut || DURATION === 0 ? -Infinity : performance.now();
-  if (engine.sets) engine.sets.show(setOf(stop), list(stop.data.parts));
-  showBeat(b, true);
-  if (engine.sets && (instant || cut)) engine.sets.update(1);
-  if (cut) {
-    shot = fromShot = toShot;
-    shotStarted = -Infinity;
-    if (!reduceMotion || through) {
-      document.body.classList.add("is-cut");
-      requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove("is-cut")));
-    }
-  }
-  if (left && !instant) hud.dock(left.card);
-  pulseStart = performance.now() + DURATION;
-}
-
-function setOf(stop) {
-  return stop.data.set || "rocket";
-}
-
-const numberOr = (value, fallback) => (value === undefined || value === "" ? fallback : Number(value));
-
-// Focus, labels, role lens, pulse and HUD of the current beat. Only the stop's own entry may snap the
-// camera (a cut or a jump); a beat always flies
-function showBeat(b, entering = false) {
-  beat = b;
-  const stop = current;
-  shown = view(stop, b);
-  // A beat may raise or lower the Nexus tubes (data-telescope): the engine blends there from where it stands,
-  // the Idea carrying on from its current angle
-  const tel = numberOr(shown.telescope, stop.state.telescope);
-  if (to && to.telescope !== tel) {
-    if (!entering) {
-      from = engine.state;
-      if (!Number.isFinite(from.idea)) from.idea = 0;
-      run = 0;
-      started = DURATION === 0 ? -Infinity : performance.now();
-    }
-    to = { ...to, split: { ...to.split }, presence: { ...to.presence }, telescope: tel, idea: entering ? to.idea : from.idea };
-    layout = engine.set(to);
-    engine.set(from);
-  }
-  // The camera heads for the beat's shot (the stop's unless the beat has its own)
-  const name = shown.shot || "hero";
-  if (name !== shotName) {
-    shotName = name;
-    fromShot = shot;
-    toShot = resolveShot(name, layout);
-    shotStarted = entering && started === -Infinity ? -Infinity : performance.now();
-    shotDuration = DURATION;
-  }
-  focusTags = shown.focus ? list(shown.focus) : null;
-  contextTags = list(shown.context);
-  engine.labels(list(shown.labels));
-  labelsChanged = true;
-  engine.energize(list(shown.energize));
-  engine.charge(list(shown.pulse), lags(shown.pulseLag));
-  setPulseBand(...pulseBand(shown.pulseBand, layout));
-  if (engine.sets)
-    engine.sets.setTarget({
-      separate: numberOr(shown.separate, 0),
-      open: numberOr(shown.open, 0),
-      score: numberOr(shown.score, 0),
-      rule: numberOr(shown.rule, 100),
-      ceiling: numberOr(shown.ceiling, 100),
-      rings: list(shown.rings),
-      select: numberOr(shown.select, 1),
-    });
-  hud.update(stop, b);
-  if (stop.card) {
-    stop.card.querySelectorAll("[data-beat]").forEach((el) => el.classList.toggle("is-now", Number(el.dataset.beat) === b));
-    revealFrom(stop, b);
-  }
-  // A sandboxed frame (SharePoint and Teams previews show the file in about:srcdoc) refuses to change the
-  // URL; the deck runs on without the hash
-  try {
-    history.replaceState(null, "", hashOf(stop.index, b));
-  } catch {}
-  wake(1000);
-}
-
-// Card items marked data-from show from their beat on. On phones they take the place of the text above
-// them (css/engine.css): the text fades out, the two swap, the new content fades in
-const SWAP_MS = 200;
-// A quicker next beat or stop cancels the pending swap rather than racing it
-let swapTimer = 0;
-let swapping = null;
-function revealFrom(stop, b) {
-  clearTimeout(swapTimer);
-  swapping?.classList.remove("is-swapping");
-  swapping = null;
-  const items = [...stop.card.querySelectorAll("[data-from]")];
-  const show = (k) => items.forEach((el) => el.classList.toggle("is-shown", k >= Number(el.dataset.from)));
-  const changes = items.some((el) => el.classList.contains("is-shown") !== b >= Number(el.dataset.from));
-  if (!changes || !phone.matches || reduceMotion) {
-    show(b);
-    return;
-  }
-  stop.card.classList.add("is-swapping");
-  swapping = stop.card;
-  swapTimer = setTimeout(() => {
-    swapping = null;
-    if (current === stop) show(beat);
-    // Two frames: the swapped content first lays out transparent, then fades in
-    requestAnimationFrame(() => requestAnimationFrame(() => stop.card.classList.remove("is-swapping")));
-  }, SWAP_MS);
-}
-
-// Beat by beat, then stop by stop; nothing past either end of the deck
-function next() {
-  if (!current) return;
-  if (beat < current.beats.length - 1) go(current.index, false, beat + 1);
-  else if (current.index < stops.length - 1) go(current.index + 1);
-}
-
-function previous() {
-  if (!current) return;
-  if (beat > 0) go(current.index, false, beat - 1);
-  else if (current.index > 0) go(current.index - 1, false, -1);
-}
-
-// ---------- motion ----------
-
-// Idle: on stops marked data-idle the wheel and core turn slowly in opposite directions;
-// elsewhere they settle back to rest by the shortest way
-let spin = 0;
-let spinning = false;
-let last = 0;
-let SPIN_SPEED = reduceMotion ? 0 : 0.06; // radians per second
-
-// Run: on stops with data-idea="run" the Idea travels its track, gates flashing as it passes
-let run = 0;
-let RUN_SPEED = reduceMotion ? 0 : 24; // degrees per second
+const hud = createHud(stops, () => prefs.reduced);
+const motion = createMotion(engine, prefs);
+const deck = createDeck({ stops, engine, cards, hud, motion, prefs, phone, wake });
+const S = deck.state;
 
 motionQuery.addEventListener("change", (e) => {
-  reduceMotion = e.matches;
-  DURATION = reduceMotion ? 0 : 1600;
-  SPIN_SPEED = reduceMotion ? 0 : 0.06;
-  RUN_SPEED = reduceMotion ? 0 : 24;
+  prefs.reduced = e.matches;
   wake(300);
 });
 
-// Seconds since the previous frame, capped so a hidden tab does not jump on return
-let dt = 0;
-
-// Easing towards a target at the same pace whatever the display's refresh rate
-// (rate: fraction per second; 5 ≈ the 8 % per frame these fades had at 60 Hz)
-function approach(rate) {
-  return 1 - Math.exp(-rate * dt);
-}
-
-function idle(now) {
-  dt = Math.min(0.1, (now - last) / 1000 || 0);
-  last = now;
-  if (current && current.data.idle !== undefined) spin += SPIN_SPEED * dt;
-  else {
-    spin = Math.atan2(Math.sin(spin), Math.cos(spin));
-    spin = Math.abs(spin) < 1e-4 ? 0 : spin + (0 - spin) * Math.min(1, dt * 3);
-  }
-  spinning = SPIN_SPEED > 0 && (spin !== 0 || (current && current.data.idle !== undefined));
-  engine.spin(spin);
-  if (current && current.data.idea === "run") run += RUN_SPEED * dt;
-}
-
-// Pulse: on stops with data-pulse a red wave runs out from the core every few seconds, once the camera has landed
-const PULSE_SPEED = 2.6; // world units per second
-const PULSE_EVERY = 3.2; // seconds
-let pulseStart = 0;
-let pulseHold = null; // debug: freeze the wave at a radius (deck.holdPulse)
-
-function pulse(now) {
-  const t = (now - pulseStart) / 1000;
-  setPulse(pulseHold !== null ? pulseHold : current && shown.pulse && !reduceMotion && t > 0 ? (t % PULSE_EVERY) * PULSE_SPEED : -10);
-}
+let plainLabels = []; // labels on screen that leader names keep clear of
+let bandNames = []; // domain names on screen, kept in one column
 
 // Keep part names clear of the card, the HUD (top-left block, footer at the bottom) and the plain labels.
 // texts: each shown plain label's text box, read in the frame's one layout pass
@@ -372,19 +125,19 @@ const themeTarget = () => (["blueprint", "dark"].includes(document.body.dataset.
 function blendTheme() {
   const target = themeTarget();
   if (theme === target) return false;
-  theme = reduceMotion || Math.abs(target - theme) < 0.002 ? target : theme + (target - theme) * approach(3);
+  theme = prefs.reduced || Math.abs(target - theme) < 0.002 ? target : theme + (target - theme) * motion.approach(3);
   lineart.setTheme(theme);
   return true;
 }
 
 function frame(now) {
-  idle(now);
+  motion.tick(now, S.current);
   // The frame's time can be a hair older than a key press's performance.now(): never below 0
-  const raw = Math.max(0, Math.min(1, (now - started) / DURATION));
-  if (portal && now - shotStarted >= shotDuration) landPortal();
-  const camRaw = Math.max(0, Math.min(1, (now - shotStarted) / shotDuration));
+  const raw = Math.max(0, Math.min(1, (now - S.started) / deck.duration()));
+  if (S.portal && now - S.shotStarted >= S.shotDuration) deck.landPortal();
+  const camRaw = Math.max(0, Math.min(1, (now - S.shotStarted) / S.shotDuration));
   const moving = theme !== themeTarget() || raw < 1 || camRaw < 1 || settling || now < awakeUntil;
-  const ambient = spinning || (!reduceMotion && (shown.pulse || (current && current.data.idea === "run")));
+  const ambient = motion.spinning || (!prefs.reduced && (S.shown.pulse || (S.current && S.current.data.idea === "run")));
   if (!moving && !ambient) {
     looping = false;
     return;
@@ -395,18 +148,18 @@ function frame(now) {
   lastDraw = now;
   drawn++;
 
-  pulse(now);
+  motion.pulse(now, S.current && S.shown.pulse);
   blendTheme();
   const t = ease(Number.isFinite(raw) ? raw : 1);
-  if (from && to) {
-    const state = blendState(from, to, t);
-    state.idea += run;
+  if (S.from && S.to) {
+    const state = blendState(S.from, S.to, t);
+    state.idea += motion.run;
     engine.set(state);
     engine.flashGates(state.idea, now);
   }
-  const fading = engine.focus(focusTags, reduceMotion ? 1 : approach(5), contextTags);
-  const posing = engine.sets ? engine.sets.update(reduceMotion ? 1 : approach(2.5)) : false;
-  shot = blendShots(fromShot, toShot, ease(Number.isFinite(camRaw) ? camRaw : 1));
+  const fading = engine.focus(S.focusTags, prefs.reduced ? 1 : motion.approach(5), S.contextTags);
+  const posing = engine.sets ? engine.sets.update(prefs.reduced ? 1 : motion.approach(2.5)) : false;
+  const shot = (S.shot = blendShots(S.fromShot, S.toShot, ease(Number.isFinite(camRaw) ? camRaw : 1)));
   camera.position.copy(shot.pos);
   camera.lookAt(shot.target);
   camera.rotateZ((shot.roll || 0) * RAD);
@@ -414,8 +167,8 @@ function frame(now) {
   lineart.render(scene, camera);
   engraving.render(scene, camera);
   labels.render(scene, camera);
-  if (labelsChanged) {
-    labelsChanged = false;
+  if (S.labelsChanged) {
+    S.labelsChanged = false;
     plainLabels = [...labels.domElement.querySelectorAll(".label.is-on:not(.lead)")];
     bandNames = plainLabels.filter((el) => el.classList.contains("label-band"));
   }
@@ -430,13 +183,14 @@ function frame(now) {
     return dx ? { left: q.left + dx, top: q.top, width: q.width, height: q.height } : q;
   });
   engine.align(camera);
+  const { current, shown } = S;
   if (current) {
     // Measured unfolded: folding is decided again for each card
     const fold = cards.place(current, camera, hud.rect(16, false), hud.compact ? hud.rect(16, true) : null);
     hud.tighten(fold);
   }
   const at = pins(phone.matches ? shown.leadAtPhone : shown.leadAt);
-  const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(boxes), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, reduceMotion ? 1 : approach(13), Number(shown.leadDrop) || 0, at);
+  const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(boxes), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, prefs.reduced ? 1 : motion.approach(13), Number(shown.leadDrop) || 0, at);
   settling = fading || gliding || posing;
 }
 
@@ -506,12 +260,13 @@ window.addEventListener("afterprint", () => {
 
 // ---------- start ----------
 
+const { go, next, previous } = deck;
 bindInput({ next, previous, go, count: stops.length });
 
 // Debug handle for headless checks
 window.deck = {
   go, next, previous, stops, BANDS,
-  holdPulse: (r = null) => (pulseHold = r),
+  holdPulse: (r = null) => motion.hold(r),
   drawn: () => drawn,
   drawCalls: () => {
     renderer.info.autoReset = false;
@@ -524,5 +279,5 @@ window.deck = {
 
 const [startIndex, startBeat] = readHash(stops.length);
 go(startIndex, true, startBeat);
-fromShot = toShot;
+S.fromShot = S.toShot;
 wake(300);
