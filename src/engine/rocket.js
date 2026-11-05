@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RAD, polar, extrude } from "../geometry.js";
 import { mesh } from "../parts.js";
-import { WHITE, INK, box, cyl, plate, bolts, pipe } from "./kit.js";
+import { WHITE, INK, box, cyl, plate, bolts, pipe, merge } from "./kit.js";
 
 // Heights in world units; the engine's wheel sits at y = 0 and its stack goes down to about y = -4
 export const ROCKET = {
@@ -295,7 +295,16 @@ export function buildRocket() {
   s3.add(onBody(porthole(0.85, t3), 134, 25.1, 0.06));
   group.add(s3);
 
+  // Each part that moves as one (the booster, the two half-shells, the nose) bakes into a few meshes, one per look
+  // and tags: about 870 draw calls become about 60. The groups stay, so poses, focus and leader names still work
+  [s1, ...halves, s3].forEach(bake);
   return { group, stages: [s1, s2, s3], halves };
+}
+
+function bake(part) {
+  const baked = merge(part, { byTags: true });
+  part.clear();
+  [...baked.children].forEach((m) => part.add(m));
 }
 
 // Pose: separation pulls the booster down and away, open spreads the middle halves
