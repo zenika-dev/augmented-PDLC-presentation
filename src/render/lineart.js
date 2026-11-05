@@ -148,6 +148,8 @@ function palette(base, prefix) {
 // stipple: dot shading strength, 0–1 (or --art-stipple on :root; --art-dark-stipple for blueprint, which
 // defaults to the paper value)
 export function createLineArt(renderer, { stipple } = {}) {
+  // render() clears each target itself, once
+  renderer.autoClear = false;
   const P = palette(PAPER, "art");
   const B = palette(BLUEPRINT, "art-dark");
   const root = getComputedStyle(document.documentElement);
@@ -160,8 +162,9 @@ export function createLineArt(renderer, { stipple } = {}) {
     const n = parseFloat(root.getPropertyValue(name));
     return Number.isFinite(n) ? n : fallback;
   };
-  // textures[0]: light, role, focus, coverage; textures[1]: view normals
-  const gbuf = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, count: 2 });
+  // textures[0]: light, role, focus, coverage; textures[1]: view normals (n × 0.5 + 0.5). Eight bits a channel
+  // hold all of it, and every GPU can draw into them (half floats need an extension some phones lack)
+  const gbuf = new THREE.WebGLRenderTarget(1, 1, { type: THREE.UnsignedByteType, count: 2 });
   gbuf.depthTexture = new THREE.DepthTexture(1, 1, THREE.FloatType);
   const lightWorld = new THREE.Vector3(-0.5, 0.8, 0.45).normalize();
   // The composite writes straight to the canvas, so colours stay in sRGB

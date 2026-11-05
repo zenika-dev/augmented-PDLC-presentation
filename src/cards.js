@@ -20,9 +20,15 @@ export function createCards(container, onResize) {
   const probe = document.createElement("div");
   probe.style.cssText = "position:fixed;visibility:hidden;padding:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)";
   document.body.appendChild(probe);
+  // Read once per size, not per frame: turning the phone fires resize
+  let sides = null;
+  window.addEventListener("resize", () => (sides = null));
   const insets = () => {
-    const s = getComputedStyle(probe);
-    return [parseFloat(s.paddingLeft) || 0, parseFloat(s.paddingRight) || 0];
+    if (!sides) {
+      const s = getComputedStyle(probe);
+      sides = [parseFloat(s.paddingLeft) || 0, parseFloat(s.paddingRight) || 0];
+    }
+    return sides;
   };
 
   function add(stop) {

@@ -12,7 +12,7 @@ import { createEngine, blendState } from "./engine/index.js";
 import { resolveShot, blendShots, ease } from "./shots.js";
 import { createLineArt, setPulse, setPulseBand } from "./render/lineart.js";
 import { createLeaders } from "./leaders.js";
-import { alignRight } from "./labels.js";
+import { alignRight, rightEdges } from "./labels.js";
 import { readStops, view, list, ideaAngle, anchorPoint, lags, pins, pulseBand } from "./stops.js";
 import { createCards } from "./cards.js";
 import { createHud } from "./hud.js";
@@ -105,6 +105,7 @@ function landPortal() {
 }
 
 function go(index, instant = false, toBeat = 0, through = false) {
+  wake(100);
   // A key during a portal's first leg lands the move at once
   if (portal) landPortal();
   const stop = stops[Math.max(0, Math.min(stops.length - 1, index))];
@@ -325,8 +326,9 @@ function pulse(now) {
   setPulse(pulseHold !== null ? pulseHold : current && shown.pulse && !reduceMotion && t > 0 ? (t % PULSE_EVERY) * PULSE_SPEED : -10);
 }
 
-// Keep part names clear of the card, the HUD (top-left block, footer at the bottom) and the plain labels
-function obstacles() {
+// Keep part names clear of the card, the HUD (top-left block, footer at the bottom) and the plain labels.
+// texts: each shown plain label's text box, read in the frame's one layout pass
+function obstacles(texts) {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const out = [{ x: 0, y: h * 0.93, w, h: h * 0.07 }];
@@ -334,12 +336,7 @@ function obstacles() {
   if (r) out.push(r);
   const c = cards.box;
   if (c) out.push({ x: c.x - 12, y: c.y - 12, w: c.w + 24, h: c.h + 24 });
-  plainLabels.forEach((el) => {
-    if (el.style.display === "none") return;
-    // The text, not its box: names on an arc are rotated, domain names shifted into their column
-    const q = (el.firstElementChild || el).getBoundingClientRect();
-    out.push({ x: q.left - 4, y: q.top - 2, w: q.width + 8, h: q.height + 4 });
-  });
+  texts.forEach((q) => out.push({ x: q.left - 4, y: q.top - 2, w: q.width + 8, h: q.height + 4 }));
   return out;
 }
 
@@ -347,14 +344,23 @@ function obstacles() {
 
 const SIDES = { left: -1, right: 1 };
 
-// The loop only draws while something moves: a camera move, the idle spin, the running Idea, the pulse,
-// a fade or a gliding name, or a short wake after a beat, a resize or a card changing size
+// The loop only runs while something moves: a camera move, the idle spin, the running Idea, the pulse,
+// a fade or a gliding name, or a short wake after a beat, a resize or a card changing size. At rest it
+// stops asking for frames; wake() starts it again
 let awakeUntil = 0;
 let settling = true;
+let looping = false;
+let lastDraw = 0;
 let drawn = 0; // frames drawn, for headless checks of the idle loop
 function wake(ms) {
   awakeUntil = Math.max(awakeUntil, performance.now() + ms);
+  if (looping) return;
+  looping = true;
+  requestAnimationFrame(frame);
 }
+
+// The theme switch and the stops' themes change the engine's palette: draw the blend
+new MutationObserver(() => wake(100)).observe(document.body, { attributes: true, attributeFilter: ["data-theme"] });
 
 // The engine's palette follows the page theme: paper, or blueprint on the closing stop (and on dark pages)
 let theme = 0;
@@ -368,21 +374,21 @@ function blendTheme() {
 }
 
 function frame(now) {
-  requestAnimationFrame(frame);
   idle(now);
   // The frame's time can be a hair older than a key press's performance.now(): never below 0
   const raw = Math.max(0, Math.min(1, (now - started) / DURATION));
   if (portal && now - shotStarted >= shotDuration) landPortal();
   const camRaw = Math.max(0, Math.min(1, (now - shotStarted) / shotDuration));
-  const live =
-    theme !== themeTarget() ||
-    raw < 1 ||
-    camRaw < 1 ||
-    settling ||
-    now < awakeUntil ||
-    spinning ||
-    (!reduceMotion && (shown.pulse || (current && current.data.idea === "run")));
-  if (!live) return;
+  const moving = theme !== themeTarget() || raw < 1 || camRaw < 1 || settling || now < awakeUntil;
+  const ambient = spinning || (!reduceMotion && (shown.pulse || (current && current.data.idea === "run")));
+  if (!moving && !ambient) {
+    looping = false;
+    return;
+  }
+  requestAnimationFrame(frame);
+  // The slow spin, the pulse and the running Idea need no more than 60 frames a second (120 Hz screens)
+  if (!moving && now - lastDraw < 15) return;
+  lastDraw = now;
   drawn++;
 
   pulse(now);
@@ -409,7 +415,16 @@ function frame(now) {
     plainLabels = [...labels.domElement.querySelectorAll(".label.is-on:not(.lead)")];
     bandNames = plainLabels.filter((el) => el.classList.contains("label-band"));
   }
-  alignRight(bandNames);
+  // One layout read per frame, right after CSS2D has moved the labels: the band names' edges and every
+  // plain label's text (not its box: names on an arc are rotated, domain names shifted into their column).
+  // A domain name's text then moves into its column; its box follows by the same amount
+  const edges = rightEdges(bandNames);
+  const texts = plainLabels.filter((el) => el.style.display !== "none").map((el) => [el, (el.firstElementChild || el).getBoundingClientRect()]);
+  const moved = alignRight(edges);
+  const boxes = texts.map(([el, q]) => {
+    const dx = moved.get(el) || 0;
+    return dx ? { left: q.left + dx, top: q.top, width: q.width, height: q.height } : q;
+  });
   engine.align(camera);
   if (current) {
     // Measured unfolded: folding is decided again for each card
@@ -417,7 +432,7 @@ function frame(now) {
     hud.tighten(fold);
   }
   const at = pins(phone.matches ? shown.leadAtPhone : shown.leadAt);
-  const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, reduceMotion ? 1 : approach(13), Number(shown.leadDrop) || 0, at);
+  const gliding = leaders.update(camera, window.innerWidth, window.innerHeight, obstacles(boxes), SIDES[shown.leadSide] || 0, Number(shown.leadColumn) || 0, reduceMotion ? 1 : approach(13), Number(shown.leadDrop) || 0, at);
   settling = fading || gliding || posing;
 }
 
@@ -426,7 +441,9 @@ function frame(now) {
 function resize() {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Up to 2× and a pixel budget about 4K's: past it (5K and 6K screens) the composite pass costs more than
+  // the extra sharpness gives; never below 1×
+  renderer.setPixelRatio(Math.max(1, Math.min(window.devicePixelRatio, 2, Math.sqrt(9e6 / (w * h)))));
   renderer.setSize(w, h);
   lineart.setSize();
   labels.setSize(w, h);
@@ -504,4 +521,4 @@ window.deck = {
 const [startIndex, startBeat] = readHash(stops.length);
 go(startIndex, true, startBeat);
 fromShot = toShot;
-requestAnimationFrame(frame);
+wake(300);
