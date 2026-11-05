@@ -2,14 +2,16 @@
 // stage holds it at its base) and stands on a pad under the moon; the cockpit, the classroom, mission control and
 // the contract dial are rooms of their own, built around the origin and shown alone. A stop picks its set with
 // data-set; changing set is a cut, not a camera flight (main.js).
-// Leader names on the sets come from the edition (EDITION.leads: { key: [name, note] }); no name, no leader.
+// Leader names on the sets come from the edition (LEADS, its leads: { key: [name, note] }); no name, no leader.
 import * as THREE from "three";
-import { EDITION } from "../data.js";
+import { LEADS } from "../data.js";
 import { polar, WHEEL, DROP, RAD, phaseAngle } from "../geometry.js";
 import { label, leader } from "../labels.js";
 import { ROCKET, buildRocket, poseRocket, buildPad, buildMoon } from "./rocket.js";
 import { buildAutonomyDial } from "./instruments.js";
-import { buildCockpit, buildClassroom, buildMissionControl } from "./rooms.js";
+import { buildCockpit } from "./rooms/cockpit.js";
+import { buildClassroom } from "./rooms/classroom.js";
+import { buildMissionControl } from "./rooms/mission.js";
 import { buildCartridge, buildModelBay } from "./modules.js";
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -276,7 +278,7 @@ export function buildSets(engineRoot) {
 }
 
 function addLeaders(pieces, engineRoot) {
-  const leads = EDITION?.leads || {};
+  const leads = LEADS;
   Object.entries(POINTS).forEach(([set, points]) => {
     const root = pieces[set] || engineRoot;
     Object.entries(points).forEach(([key, [parent, at, groups]]) => {

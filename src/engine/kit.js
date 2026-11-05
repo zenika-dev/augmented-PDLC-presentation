@@ -1,17 +1,15 @@
 // Small building blocks for the rocket, its instruments and its rooms: plates, bolts, pipes and arcs, all drawn
 // as line-art meshes (white parts, ink details, energy where the tags say so).
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { RAD } from "../geometry.js";
 import { mesh } from "../parts.js";
 
 export const WHITE = "#ffffff";
 export const INK = "#1e1e1e";
 
-export function place(obj, x = 0, y = 0, z = 0, ry = 0) {
-  obj.position.set(x, y, z);
-  obj.rotation.y = ry;
-  return obj;
-}
+// Moves an object and hands it back, so a part can be built, placed and added in one line
+export const at = (obj, x, y, z) => (obj.position.set(x, y, z), obj);
 
 export const box = (w, h, d, tags, color = WHITE) => mesh(new THREE.BoxGeometry(w, h, d), color, tags);
 
@@ -119,4 +117,32 @@ export function screen(w, h, tags, { traces = 3, lit = true } = {}) {
     g.add(t);
   }
   return g;
+}
+
+// A part that moves as one piece has its meshes baked into one mesh per look (role and sides): L10's 64 fins
+// become one draw call. byTags keeps parts with different tags apart, so focus still tells them apart
+export function merge(g, { byTags = false } = {}) {
+  g.updateMatrixWorld(true);
+  const looks = new Map();
+  g.traverse((m) => {
+    if (!m.isMesh) return;
+    const key = `${m.material.uniforms.role.value}|${m.material.side}${byTags ? `|${(m.userData.tags || []).join(",")}` : ""}`;
+    if (!looks.has(key)) looks.set(key, { material: m.material, tags: m.userData.tags, geos: [] });
+    const geo = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+    Object.keys(geo.attributes).forEach((name) => name !== "position" && name !== "normal" && geo.deleteAttribute(name));
+    geo.clearGroups();
+    looks.get(key).geos.push(geo.applyMatrix4(m.matrixWorld));
+    m.geometry.dispose();
+    if (looks.get(key).material !== m.material) m.material.dispose();
+  });
+  const out = new THREE.Group();
+  out.userData = g.userData;
+  looks.forEach(({ material, tags, geos }) => {
+    const m = new THREE.Mesh(mergeGeometries(geos), material);
+    m.userData.tags = tags;
+    m.userData.role = material.uniforms.role.value;
+    out.add(m);
+    geos.forEach((geo) => geo.dispose());
+  });
+  return out;
 }

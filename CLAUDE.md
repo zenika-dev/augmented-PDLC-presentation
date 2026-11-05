@@ -37,11 +37,12 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 
 - `src/` ES modules, bundled by esbuild (`npm run build`, `npm run dev` to watch and serve) into `dist/deck.js`, an IIFE. `dist/` is committed so the deck opens offline from `file://` with no build.
   - `data.js` (phases, gates, bands, roles, sections, questions), `geometry.js`, `shots.js` (named camera shots)
-  - `engine/` builds the parts (`wheel`, `nexus`, `bands`, `layers`) and `index.js` exposes the engine's state and lenses
+  - `engine/` builds the parts (`wheel`, `nexus`, `bands`, `layers`) and `index.js` exposes the engine's state and lenses; `kit.js` (shared shapes, `merge`), `sets.js`, `rocket.js`, `rooms/`, `instruments.js`, `modules.js` build the editions' sets
   - `render/lineart.js`: the line-art renderer (G-buffer then a full-screen composite)
   - `parts.js` (meshes, focus fades, role lens, energy pulse), `labels.js` (CSS2D/CSS3D labels) and `leaders.js` (the leader-line layout)
   - `stops.js` reads stops and beats from `index.html`; `hud.js`, `cards.js`, `input.js` (keys, touch, `#n.b` hash)
-  - `main.js` wires them: renderers, the deck controller (`go`, beats) and the frame loop, which only draws while something moves
+  - `deck.js` is the deck controller (`go`, beats, portals; its `state` is what the frame loop reads), `motion.js` the idle spin, running Idea, pulse and frame clock
+  - `main.js` wires them: renderers and the frame loop, which only runs while something moves (`wake()` restarts it)
 - The files to mail are `dist/the-augmented-pdlc.html` and `dist/the-augmented-pdlc.fr.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html` / `index.fr.html`. Never link a new external file without checking the build's inline step covers it.
 - Every change to a stop, beat or `data-*` attribute goes into both pages; only the text and `data-crumb` differ. The build fails when `index.fr.html` drifts from `index.html`.
 - `css/tokens.css` (brand tokens), `css/engine.css` (labels, cards), `css/hud.css`. Nunito is vendored in `fonts/`.
@@ -49,7 +50,8 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 
 ## Client editions
 
-- A client edition is a page in `editions/<name>/` (gitignored, never committed or pushed): its own `index.html`, theme, fonts, logo and a `<script type="application/json" id="edition">` block that replaces our sections, questions and shapes and patches gates, bands and layers (`applyEdition` in `src/data.js`). Client names and prose never go into `src/`, `css/` or `docs/`.
+- A client edition is a page in `editions/<name>/` (gitignored, never committed or pushed): its own `index.html`, theme, fonts, logo and a `<script type="application/json" id="edition">` block that replaces or patches our lists (`applyEdition` in `src/data.js`; keys in `docs/editions.md`). Client names and prose never go into `src/`, `css/` or `docs/`.
+- Themes set the role tokens in `css/tokens.css` (`--ink`, `--panel-*`, `--lead-*`…) on `body` / `body[data-theme="dark"]`, not component selectors; `css/dark.css` is the public decks' dark theme written that way.
 - The engine reads its line-art colours from `--art-*` / `--art-dark-*` custom properties (`src/render/lineart.js`), so an edition repaints it from CSS. Without them the deck keeps its own look.
 - `npm run build` also builds each edition into `editions/<name>/dist/` (file name from `<meta name="single-file">`). The EN/FR parity check does not apply to editions.
 - Generic engine work for an edition happens on a feature branch, not on `main`.

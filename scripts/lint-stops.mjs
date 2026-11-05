@@ -10,11 +10,13 @@ const items = (v) => v.split(",").map((s) => s.trim()).filter(Boolean);
 const isNum = (v) => v !== "" && Number.isFinite(Number(v));
 const unit = (v) => isNum(v) && Number(v) >= 0 && Number(v) <= 1;
 
-// edition: the page's #edition JSON or null; its lists replace ours as in applyEdition (src/data.js)
+// edition: the page's #edition JSON or null; its lists replace or patch ours as in applyEdition (src/data.js)
 export function lintStops(src, html, edition) {
-  const sections = (edition?.sections ?? SECTIONS).map((s) => s.id);
-  const concerns = (edition?.concerns ?? CONCERNS).map((c) => c.id);
-  const shapes = (edition?.shapes ?? SHAPES).map((s) => s.name);
+  // An array replaces our list; an object only patches it, so the ids stay ours
+  const ids = (items, ours, key) => (Array.isArray(items) ? items : ours).map((x) => x[key]);
+  const sections = ids(edition?.sections, SECTIONS, "id");
+  const concerns = ids(edition?.concerns, CONCERNS, "id");
+  const shapes = ids(edition?.shapes, SHAPES, "name");
   const bands = BANDS.map((b) => b.id);
   const phases = PHASES.map((p) => p.id);
   const shot = (v) => {

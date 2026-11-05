@@ -4,11 +4,10 @@
 import * as THREE from "three";
 import { RAD } from "../geometry.js";
 import { mesh } from "../parts.js";
-import { WHITE, INK, box, cyl, plate, bolts, pipe } from "./kit.js";
+import { WHITE, INK, at, box, cyl, plate, bolts, pipe } from "./kit.js";
 import { dial } from "./instruments.js";
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
-const at = (o, x, y, z) => (o.position.set(x, y, z), o);
 
 // A capability: a cartridge that slides into its phase lobe. Its parts carry what the capability card describes:
 // tool heads at the front (tooling), a plug and cable at the back (platform), a clamp around the body
@@ -131,71 +130,5 @@ export function buildModelBay(tags = [], { slots = 4, selected = 1 } = {}) {
     chosen.position.set(seat.x, seat.y + 1.9 * (1 - k), seat.z + 0.9 * (1 - k));
   };
   g.userData.set(1);
-  return g;
-}
-
-// A test bench: a frame on legs holding a small engine, probes and cables to a gauge (the first iterations,
-// where a person tries models by hand). Stands on y = 0, about 4 wide.
-export function buildTestBench(tags = [], { reading = 0.5 } = {}) {
-  const g = new THREE.Group();
-  g.name = "test-bench";
-  const t = [...tags, "test-bench"];
-  g.add(at(box(4, 0.16, 2, t), 0, 1.4, 0));
-  [[-1.8, -0.8], [1.8, -0.8], [-1.8, 0.8], [1.8, 0.8]].forEach(([x, z]) => g.add(at(box(0.14, 1.4, 0.14, t), x, 0.7, z)));
-  g.add(at(box(3.6, 0.08, 0.08, t), 0, 0.4, 0.8), at(box(3.6, 0.08, 0.08, t), 0, 0.4, -0.8));
-  // The engine under test: a short stack of discs on a cradle
-  const rig = new THREE.Group();
-  rig.name = "rig";
-  [0, 0.28, 0.56].forEach((y, i) => rig.add(at(cyl(0.75 - i * 0.12, 0.2, [...t, "rig"], WHITE, 32), -0.6, 1.62 + y, 0)));
-  rig.add(at(cyl(0.12, 0.6, [...t, "rig", "energy"], WHITE, 12), -0.6, 2.4, 0));
-  g.add(rig);
-  // Probes to a gauge on a post
-  const probes = new THREE.Group();
-  probes.name = "probes";
-  [[-0.1, 1.8, 0.4], [-0.15, 2.1, -0.3]].forEach((p, i) =>
-    probes.add(pipe([v(p[0], p[1], p[2]), v(0.5, p[1] + 0.3, p[2]), v(1.1, 2.4 - i * 0.2, 0.2 - i * 0.2), v(1.3, 2.5, 0)], 0.04, [...t, "probes", "energy"])),
-  );
-  g.add(probes);
-  g.add(at(box(0.12, 1.1, 0.12, t), 1.3, 2.0, 0));
-  const gauge = dial(0.42, [...t, "bench:gauge"], { value: reading, ticks: 6, minor: 1 });
-  gauge.name = "bench:gauge";
-  at(gauge, 1.3, 2.75, 0.1);
-  g.add(gauge);
-  return g;
-}
-
-// A selector gearbox: two meshing gears in a housing and a lever with a gold knob (the following iterations, where
-// the context picks the model). Face towards +z, about 3 across.
-export function buildGearbox(tags = [], { lever = 0.4 } = {}) {
-  const g = new THREE.Group();
-  g.name = "gearbox";
-  const t = [...tags, "gearbox"];
-  g.add(plate(3.2, 2.4, 0.3, 0.3, t));
-  const gear = (r, teeth, name) => {
-    const k = new THREE.Group();
-    k.name = name;
-    const disc = cyl(r, 0.2, [...t, name], WHITE, 40);
-    disc.rotation.x = Math.PI / 2;
-    k.add(disc);
-    for (let i = 0; i < teeth; i++) {
-      const a = (360 * i) / teeth;
-      const tooth = box(0.14, 0.18, 0.2, [...t, name]);
-      tooth.position.set(Math.sin(a * RAD) * (r + 0.06), Math.cos(a * RAD) * (r + 0.06), 0);
-      tooth.rotation.z = -a * RAD;
-      k.add(tooth);
-    }
-    k.add(at(cyl(0.1, 0.3, [...t, name], INK, 12).rotateX(Math.PI / 2), 0, 0, 0.05));
-    return k;
-  };
-  g.add(at(gear(0.7, 16, "gear:1"), -0.6, 0.1, 0.45));
-  g.add(at(gear(0.42, 10, "gear:2"), 0.62, 0.45, 0.45));
-  const lever_ = new THREE.Group();
-  lever_.name = "lever";
-  lever_.add(at(cyl(0.05, 0.9, [...t, "lever"], WHITE, 8), 0, 0.45, 0));
-  lever_.add(at(mesh(new THREE.SphereGeometry(0.16, 16, 10), WHITE, [...t, "lever", "energy"]), 0, 0.92, 0));
-  lever_.rotation.z = -lever * 0.8;
-  lever_.position.set(0.9, -0.6, 0.45);
-  g.add(lever_);
-  g.add(at(box(0.9, 0.08, 0.06, t, INK), 0.9, -0.7, 0.32));
   return g;
 }

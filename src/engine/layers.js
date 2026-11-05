@@ -1,17 +1,15 @@
 // One builder per layer: each layer is a named engine part. Parts sit below y = 0 and report their height.
 // Where a layer powers a phase, its working element (arm, bump, pipe, valve, terminal, dial) sits over that phase.
 import * as THREE from "three";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { LOOP } from "../data.js";
 import { RING, DROP, RAD, extrude, polar, phaseAngle } from "../geometry.js";
 import { mesh } from "../parts.js";
+import { WHITE, INK, merge } from "./kit.js";
 
 // Leader dots sit on the working element seen on the right of the band shots (camera at 210°, so screen
 // right is 120°): the Develop phase, which every Contextualise part powers
 const FACE = phaseAngle(2);
 
-const WHITE = "#ffffff";
-const INK = "#1e1e1e";
 
 // Angles of the phases a layer powers (Drop sits over its lobe, outside Deepen)
 function powered(on) {
@@ -253,34 +251,6 @@ export function buildLayer(layer, tags) {
   const h = BUILDERS[layer.id](layer, tags, g);
   g.userData.h = h;
   return merge(g);
-}
-
-// A layer moves as one piece and every sub-part carries the same tags, so its meshes are baked into one
-// mesh per look (role and sides): L10's 64 fins become one draw call
-function merge(g) {
-  g.updateMatrixWorld(true);
-  const looks = new Map();
-  g.traverse((m) => {
-    if (!m.isMesh) return;
-    const key = `${m.material.uniforms.role.value}|${m.material.side}`;
-    if (!looks.has(key)) looks.set(key, { material: m.material, tags: m.userData.tags, geos: [] });
-    const geo = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
-    Object.keys(geo.attributes).forEach((name) => name !== "position" && name !== "normal" && geo.deleteAttribute(name));
-    geo.clearGroups();
-    looks.get(key).geos.push(geo.applyMatrix4(m.matrixWorld));
-    m.geometry.dispose();
-    if (looks.get(key).material !== m.material) m.material.dispose();
-  });
-  const out = new THREE.Group();
-  out.userData = g.userData;
-  looks.forEach(({ material, tags, geos }) => {
-    const m = new THREE.Mesh(mergeGeometries(geos), material);
-    m.userData.tags = tags;
-    m.userData.role = material.uniforms.role.value;
-    out.add(m);
-    geos.forEach((geo) => geo.dispose());
-  });
-  return out;
 }
 
 // L11: the ignition key shaft. Collars where identity is checked, the key at the bottom.

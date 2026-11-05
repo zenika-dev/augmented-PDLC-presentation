@@ -2,12 +2,12 @@
 import { FR } from "./data.fr.js";
 
 export const PHASES = [
-  { id: "discover", name: "Discover", color: "#bf1d67" },
-  { id: "design", name: "Design", color: "#d6204f" },
-  { id: "develop", name: "Develop", color: "#ee2238" },
-  { id: "deploy", name: "Deploy", color: "#9b1d2b" },
-  { id: "deepen", name: "Deepen", color: "#1e1e1e" },
-  { id: "drop", name: "Drop", color: "#565656", side: true },
+  { id: "discover", name: "Discover" },
+  { id: "design", name: "Design" },
+  { id: "develop", name: "Develop" },
+  { id: "deploy", name: "Deploy" },
+  { id: "deepen", name: "Deepen" },
+  { id: "drop", name: "Drop", side: true },
 ];
 
 // Drop is not a step of the loop: it is a side gear engaged from Deepen (G5 → retire)
@@ -155,18 +155,26 @@ export const SECTIONS = [
 // No document when scripts/build.mjs imports this file in Node: English.
 export const LANG = typeof document !== "undefined" && document.documentElement.lang === "fr" ? "fr" : "en";
 
+// Names of the parts on the sets (sets.js), filled by an edition's leads
+export const LEADS = {};
+
+// The French deck is a patch on these lists, like a client edition (below): prose only, names unchanged
 if (LANG === "fr") {
-  GATES.forEach((g) => { g.checks = FR.gates[g.id]; });
-  SHAPES.forEach((s) => { s.label = FR.shapes[s.name]; }); // name stays: data-idea looks shapes up by it
-  ROLES.forEach((r) => { r.purpose = FR.roles[r.id]; });
-  CONCERNS.forEach((c) => Object.assign(c, FR.concerns[c.id]));
-  SECTIONS.forEach((s) => { s.name = FR.sections[s.id]; });
+  const each = (o, f) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, f(v)]));
+  applyEdition({
+    gates: each(FR.gates, (checks) => ({ checks })),
+    shapes: each(FR.shapes, (label) => ({ label })), // keyed by name: data-idea looks shapes up by it
+    roles: each(FR.roles, (purpose) => ({ purpose })),
+    concerns: FR.concerns,
+    sections: each(FR.sections, (name) => ({ name })),
+  });
 }
 
 // A client edition (editions/<name>/index.html, never committed) brings its own data in
 // <script type="application/json" id="edition">, so client names and prose never enter src/ or the bundle.
-// Lists replace ours (sections, concerns, shapes); keyed objects patch ours by id (gates, bands, layers);
-// bandOrder restacks the bands, top first.
+// docs/editions.md lists its keys. A list given as an array replaces ours; given as an object keyed by id
+// (shapes: by name) it patches ours item by item. gates, bands, layers (L11 included), phases, registers and
+// roles patch by id; bandOrder restacks the bands, top first; leads names the parts on the sets.
 export const EDITION = readEdition();
 if (EDITION) applyEdition(EDITION);
 export const MENTION = EDITION?.mention ?? (LANG === "fr" ? FR.mention : "© ZENIKA 2026 · All Rights Reserved");
@@ -183,18 +191,26 @@ function readEdition() {
   }
 }
 
-export function applyEdition(e) {
-  const replace = (list, items) => items && list.splice(0, list.length, ...items);
-  replace(SECTIONS, e.sections);
-  replace(CONCERNS, e.concerns);
-  replace(SHAPES, e.shapes);
-  GATES.forEach((g) => Object.assign(g, e.gates?.[g.id]));
+function patch(list, items, key = "id") {
+  if (!items) return;
+  if (Array.isArray(items)) list.splice(0, list.length, ...items);
+  else list.forEach((item) => Object.assign(item, items[item[key]]));
+}
+
+function applyEdition(e) {
+  patch(SECTIONS, e.sections);
+  patch(CONCERNS, e.concerns);
+  patch(SHAPES, e.shapes, "name");
+  patch(GATES, e.gates);
+  patch(PHASES, e.phases);
+  patch(REGISTERS, e.registers);
+  patch(ROLES, e.roles);
   if (e.bandOrder) {
     const ids = BANDS.map((b) => b.id);
     if (e.bandOrder.length !== ids.length || !ids.every((id) => e.bandOrder.includes(id))) {
       throw new Error(`Edition bandOrder must list each band once: ${ids.join(", ")}`);
     }
-    replace(BANDS, e.bandOrder.map((id) => BANDS.find((b) => b.id === id)));
+    patch(BANDS, e.bandOrder.map((id) => BANDS.find((b) => b.id === id)));
   }
   BANDS.forEach((b) => {
     Object.assign(b, e.bands?.[b.id]);
@@ -202,4 +218,5 @@ export function applyEdition(e) {
   });
   // L11 is the spine, outside the bands
   Object.assign(SPINE, e.layers?.[SPINE.id]);
+  Object.assign(LEADS, e.leads);
 }
