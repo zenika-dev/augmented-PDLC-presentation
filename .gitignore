@@ -26,3 +26,6 @@ assets/source/*.png
 
 # Client editions of the deck: client names, brand and programme content. Never commit, never push.
 editions/
+
+# Claude Code worktrees
+.claude/worktrees/
