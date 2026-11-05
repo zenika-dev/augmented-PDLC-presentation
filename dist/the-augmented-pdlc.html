@@ -394,15 +394,21 @@
     font-size: max(7px, calc(17 * var(--u)));
   }
 
+  .lead.label-register,
+  .lead.label-level {
+    --lead-ink: var(--lead-soft);
+  }
+
+  /* After the softer lines: an energized part's line and name always share the energy colour */
   .lead.label-role,
   .lead.is-energized {
     --lead-ink: var(--lead-energy);
     color: var(--lead-energy-name);
   }
 
-  .lead.label-register,
-  .lead.label-level {
-    --lead-ink: var(--lead-soft);
+  /* An edition may draw the energized part's note in the energy colour too (--lead-energy-note) */
+  .lead.is-energized .lead-note {
+    color: var(--lead-energy-note, var(--lead-note));
   }
 
   /* ---------- Annotation cards: one per stop, anchored next to what they explain ---------- */
