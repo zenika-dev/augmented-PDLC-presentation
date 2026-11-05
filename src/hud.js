@@ -2,8 +2,10 @@
 // (lit where the step speaks to them), the source line and the n / N counter.
 import { CONCERNS, SECTIONS, MENTION } from "./data.js";
 import { list, view } from "./stops.js";
+import { fillIcons } from "./icons.js";
 
-const THEME_KEY = "deck-theme";
+// One choice per page: on one origin (file://, a share) the public decks and a dark edition keep their own
+const THEME_KEY = `deck-theme:${location.pathname}`;
 
 export function createHud(stops, reduceMotion) {
   const el = {
@@ -54,6 +56,8 @@ export function createHud(stops, reduceMotion) {
   let base = document.body.dataset.themeDefault || "light";
   let last = null;
   if (toggle) {
+    // The icon shows where a click goes: the moon on a light page, the sun on a dark one
+    fillIcons(toggle, "dark", "light");
     try {
       base = localStorage.getItem(THEME_KEY) || base;
     } catch {}
@@ -65,6 +69,23 @@ export function createHud(stops, reduceMotion) {
       if (last) applyTheme(last);
     });
   }
+  // Full screen switch next to it, hidden where the page cannot go full screen (a frame without
+  // allowfullscreen, iPhone Safari). Esc leaves full screen (input.js)
+  const full = document.querySelector(".hud-fullscreen");
+  if (full) {
+    fillIcons(full, "fullscreen", "fullscreenExit");
+    full.hidden = !document.fullscreenEnabled;
+    full.addEventListener("click", () => {
+      const going = document.fullscreenElement
+        ? document.exitFullscreen()
+        : document.documentElement.requestFullscreen({ navigationUI: "hide" });
+      going.catch(() => {});
+    });
+    document.addEventListener("fullscreenchange", () => {
+      full.setAttribute("aria-pressed", String(!!document.fullscreenElement));
+    });
+  }
+
   function applyTheme(stop) {
     document.body.dataset.theme = stop.data.theme || base;
     toggle?.setAttribute("aria-pressed", String(document.body.dataset.theme !== "light"));

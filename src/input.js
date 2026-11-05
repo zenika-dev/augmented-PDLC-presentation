@@ -16,8 +16,13 @@ export function readHash(count) {
 export function bindInput(deck) {
   document.addEventListener("keydown", (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
-    // A focused button (the theme switch) keeps Space and Enter for itself
+    // A focused button (the theme and full screen switches) keeps Space and Enter for itself
     if (e.target.closest?.("button") && [" ", "Enter"].includes(e.key)) return;
+    // Esc leaves full screen; browsers mostly do it themselves, this covers hosts that pass the key on
+    if (e.key === "Escape" && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+      return;
+    }
     if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) deck.next();
     else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) deck.previous();
     else if (e.key === "Home") deck.go(0);

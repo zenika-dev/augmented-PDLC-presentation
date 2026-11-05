@@ -133,36 +133,86 @@ body[data-hud="crumb"] .hud-checklist {
   }
 }
 
-/* Light/dark switch at the bottom left, on the footer line (pages that have one: client editions).
-   A half-filled disc; the footer text moves right to make room */
-.hud-theme {
+/* Light/dark and full screen switches at the bottom left, on the footer line. Each holds two icons
+   (icons.js) and shows the one for its state; the footer text moves right to make room */
+.hud {
+  --switch: max(18px, calc(22 * var(--u)));
+  --switch-gap: max(6px, calc(8 * var(--u)));
+  --foot-size: max(calc(10 * var(--fl)), calc(16 * var(--u)));
+}
+
+.hud-theme,
+.hud-fullscreen {
   position: absolute;
-  bottom: calc(40 * var(--u) + var(--safe-b) - 4px);
+  /* Centred on the footer's capitals: the line box (1.4) puts its middle 0.7em up, capitals sit a hair above */
+  bottom: calc(40 * var(--u) + var(--safe-b) + 0.74 * var(--foot-size) - var(--switch) / 2);
   left: calc(64 * var(--u) + var(--safe-l));
-  width: max(24px, calc(30 * var(--u)));
-  height: max(24px, calc(30 * var(--u)));
+  width: var(--switch);
+  height: var(--switch);
   padding: 0;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  border: 0;
+  background: none;
   color: var(--fg);
   cursor: pointer;
   pointer-events: auto;
   opacity: 0.75;
-  transition: opacity 200ms ease, transform 400ms ease;
+  transition: opacity 200ms ease;
+}
+
+.hud-fullscreen {
+  left: calc(64 * var(--u) + var(--switch) + var(--switch-gap) + var(--safe-l));
+}
+
+.hud-theme[hidden],
+.hud-fullscreen[hidden] {
+  display: none;
 }
 
 .hud-theme:hover,
-.hud-theme:focus-visible {
+.hud-theme:focus-visible,
+.hud-fullscreen:hover,
+.hud-fullscreen:focus-visible {
   opacity: 1;
 }
 
-.hud-theme[aria-pressed="true"] {
-  transform: rotate(180deg);
+.hud-theme svg,
+.hud-fullscreen svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 250ms ease, transform 400ms ease;
 }
 
+/* The icon swap: the old one turns and fades out, the new one turns in */
+.hud-theme .icon-on,
+.hud-fullscreen .icon-on,
+.hud-theme[aria-pressed="true"] .icon-off,
+.hud-fullscreen[aria-pressed="true"] .icon-off {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+.hud-theme[aria-pressed="true"] .icon-on,
+.hud-fullscreen[aria-pressed="true"] .icon-on {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-theme svg,
+  .hud-fullscreen svg {
+    transition: none;
+  }
+}
+
+/* The footer text starts a wide gap after the last switch */
 .hud:has(.hud-theme) .hud-footer {
-  left: calc(64 * var(--u) + max(24px, calc(30 * var(--u))) + max(14px, calc(24 * var(--u))) + var(--safe-l));
+  left: calc(64 * var(--u) + var(--switch) + max(22px, calc(36 * var(--u))) + var(--safe-l));
+}
+
+.hud:has(.hud-theme):has(.hud-fullscreen:not([hidden])) .hud-footer {
+  left: calc(64 * var(--u) + 2 * var(--switch) + var(--switch-gap) + max(22px, calc(36 * var(--u))) + var(--safe-l));
 }
 
 .hud-logo {
@@ -188,7 +238,8 @@ body[data-hud="crumb"] .hud-checklist {
   justify-content: space-between;
   align-items: baseline;
   gap: calc(32 * var(--u));
-  font-size: max(calc(10 * var(--fl)), calc(16 * var(--u)));
+  font-size: var(--foot-size);
+  line-height: 1.4;
   /* Darker than the muted grey (4.5:1 on the pastel), with a halo where engine lines run under it */
   color: color-mix(in srgb, var(--fg-muted) 70%, var(--fg));
   text-shadow: 0 0 2px var(--halo), 0 0 4px var(--halo), 0 0 8px var(--halo);
@@ -206,17 +257,6 @@ body[data-hud="crumb"] .hud-checklist {
   .hud-checklist li {
     transition: none;
   }
-}
-
-/* Fallback message when impress.js is not supported */
-.fallback-message {
-  font-family: var(--font);
-  padding: 32px;
-  max-width: 720px;
-}
-
-.impress-supported .fallback-message {
-  display: none;
 }
 
 /* Phone held upright: ask for landscape. Scripts only; the reading version scrolls in portrait. */

@@ -214,7 +214,11 @@ function showBeat(b, entering = false) {
     stop.card.querySelectorAll("[data-beat]").forEach((el) => el.classList.toggle("is-now", Number(el.dataset.beat) === b));
     revealFrom(stop, b);
   }
-  history.replaceState(null, "", hashOf(stop.index, b));
+  // A sandboxed frame (SharePoint and Teams previews show the file in about:srcdoc) refuses to change the
+  // URL; the deck runs on without the hash
+  try {
+    history.replaceState(null, "", hashOf(stop.index, b));
+  } catch {}
   wake(1000);
 }
 
