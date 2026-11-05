@@ -45,8 +45,8 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
   - `main.js` wires them: renderers and the frame loop, which only runs while something moves (`wake()` restarts it)
 - The files to mail are `dist/the-augmented-pdlc.html` and `dist/the-augmented-pdlc.fr.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html` / `index.fr.html`. Never link a new external file without checking the build's inline step covers it.
 - Every change to a stop, beat or `data-*` attribute goes into both pages; only the text and `data-crumb` differ. The build fails when `index.fr.html` drifts from `index.html`.
-- `css/tokens.css` (brand tokens), `css/engine.css` (labels, cards), `css/hud.css`. Nunito is vendored in `fonts/`.
-- Phones (coarse pointer, ≤600px in one dimension): font floors and the card minimum width off (`--fl`), HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move, a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
+- `css/tokens.css` (brand and role tokens, the cascade layer order), `css/engine.css` (labels, cards), `css/hud.css`, `css/dark.css`, `css/fallback.css`: layers tokens → components → themes → fallback; small red text uses `--red-text` (`#c8102e`, ≥ 4.5:1). Nunito is vendored in `fonts/`.
+- Phones (coarse pointer, ≤600px in one dimension; the page head sets `html.phone`, CSS and scripts read it): font floors and the card minimum width off (`--fl`) except for leader names and the footer, HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move, a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
 
 ## Client editions
 

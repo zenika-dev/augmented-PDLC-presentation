@@ -7,8 +7,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>The Augmented PDLC</title>
-  <!-- Scripts on: the 3D deck. Scripts off (mail previewers): css/fallback.css lays the cards out as a page -->
-  <script>document.documentElement.className = "js";</script>
+  <!-- Scripts on: the 3D deck. Scripts off (mail previewers): css/fallback.css lays the cards out as a page.
+       html.phone: a phone (coarse pointer, 600px or less one way), set before first paint and kept up as it turns -->
+  <script>(function (h, m) { h.className = "js"; var s = function () { h.classList.toggle("phone", m.matches); }; s(); m.addEventListener("change", s); })(document.documentElement, matchMedia("(pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px)"));</script>
   <meta name="description" content="Zenika point of view on AI across the Product Delivery Life Cycle: what's real, what's coming, what to decide.">
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/tokens.css">
@@ -109,7 +110,7 @@
 
   <section id="gates" class="stop" data-section="wheel" data-shot="top-right" data-parts="wheel" data-labels="gate-names,gate-notes" data-idea="run"
            data-focus="gates,idea" data-crumb="Gates" data-answers="govern,secure" data-anchor="screen" data-side="left" data-dock="bottom"
-           data-lead-at="G4=0.44/0.4, G5=0.6/0.15, G6=0.79/0.2, G3=0.63/0.88" data-lead-at-phone="G5=0.37/0.16, G4=0.37/0.31, G6=0.68/0.12">
+           data-lead-at="G4=0.44/0.4, G5=0.6/0.15, G6=0.79/0.2, G3=0.63/0.88" data-lead-at-phone="G5=0.37/0.16, G4=0.37/0.31, G6=0.68/0.12, G3=0.66/0.74">
     <div class="card">
       <p class="card-num">Quality gates</p>
       <h2>A Gate on <em>Every</em> Passage</h2>

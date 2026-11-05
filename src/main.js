@@ -22,8 +22,8 @@ import { createMotion } from "./motion.js";
 // Reduced motion: no camera moves, spin, run or pulse. Followed live, so turning it on mid-talk applies at once
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 const prefs = { reduced: motionQuery.matches };
-// Same test as css/tokens.css; read when used, so turning the phone is covered
-const phone = window.matchMedia("(pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px)");
+// The page head sets html.phone (and keeps it up as the phone turns); read when used
+const phone = { get matches() { return document.documentElement.classList.contains("phone"); } };
 
 // ---------- renderers ----------
 
@@ -34,7 +34,7 @@ try {
   renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
 } catch (error) {
   // No WebGL (a blocked GPU, some previewers): the reading version, as with scripts off
-  document.documentElement.className = "no-js";
+  document.documentElement.classList.replace("js", "no-js");
   throw error;
 }
 stage.appendChild(renderer.domElement);
@@ -88,7 +88,9 @@ let bandNames = []; // domain names on screen, kept in one column
 function obstacles(texts) {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const out = [{ x: 0, y: h * 0.93, w, h: h * 0.07 }];
+  // The footer line: the bottom 7 %, or more where its text is taller (phones)
+  const f = Math.min(h * 0.93, hud.footerTop() - 4);
+  const out = [{ x: 0, y: f, w, h: h - f }];
   const r = hud.rect(12);
   if (r) out.push(r);
   const c = cards.box;
@@ -250,10 +252,10 @@ window.addEventListener("beforeprint", () => {
     s.card.style.transform = ""; // placed again on the next frame
     s.el.appendChild(s.card);
   });
-  document.documentElement.className = "no-js";
+  document.documentElement.classList.replace("js", "no-js");
 });
 window.addEventListener("afterprint", () => {
-  document.documentElement.className = "js";
+  document.documentElement.classList.replace("no-js", "js");
   stops.forEach((s) => s.card && cardLayer.appendChild(s.card));
   wake(300);
 });

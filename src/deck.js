@@ -18,7 +18,7 @@ const SWAP_MS = 200;
 const numberOr = (value, fallback) => (value === undefined || value === "" ? fallback : Number(value));
 const setOf = (stop) => stop.data.set || "rocket";
 
-// prefs.reduced: prefers-reduced-motion (no camera moves); phone: the phone media query; wake(ms): draw for ms
+// prefs.reduced: prefers-reduced-motion (no camera moves); phone.matches: html.phone (index.html); wake(ms): draw for ms
 export function createDeck({ stops, engine, cards, hud, motion, prefs, phone, wake }) {
   const shot = { pos: new THREE.Vector3(0, 30, 0.01), target: new THREE.Vector3() };
   const state = {

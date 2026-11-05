@@ -28,7 +28,7 @@ The build checks each stop's attributes against these lists (`scripts/lint-stops
 
 ## Theme
 
-The components read role tokens (`css/tokens.css`, on `body`): `--ink`, `--ink-strong`, `--ink-muted`, `--emph`, `--panel-*`, `--label-*`, `--lead-*`, `--hud-veil`, `--crumb`, `--bar-track`, `--bar-fill`, `--question-now`. Optional ones fall back to a role: `--card-fg`, `--ink-lit`, `--kicker`, `--sub`, `--card-num`. An edition sets them on `body` for both themes and on `body[data-theme="dark"]` for its dark theme, rather than restyling components. `css/dark.css` is the public decks' dark theme, written the same way.
+The components read role tokens (`css/tokens.css`, on `body`): `--ink`, `--ink-strong`, `--ink-muted`, `--emph` (the red word in titles), `--emph-small` (small red text, from `--red-text`), `--panel-*`, `--label-*`, `--lead-*`, `--hud-veil`, `--crumb`, `--bar-track`, `--bar-fill`, `--question-now`. Optional ones fall back to a role: `--card-fg`, `--ink-lit`, `--kicker`, `--sub`, `--card-num`. An edition sets them on `body` for both themes and on `body[data-theme="dark"]` for its dark theme, rather than restyling components. Our stylesheets sit in cascade layers (tokens, components, themes, fallback); the edition's `theme.css` stays outside them, so its rules win without heavier selectors. Phone rules use `html.phone`, which the page head sets. `css/dark.css` is the public decks' dark theme, written the same way.
 
 The engine's line art reads `--art-*` (light) and `--art-dark-*` (dark) on `:root` (`src/render/lineart.js`). A body with `data-theme-default="dark"` opens dark; a `.hud-theme` button lets the viewer switch.
 

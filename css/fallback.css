@@ -2,140 +2,142 @@
    become one scrolling page. The head script sets html.js before first paint, so the deck never shows this.
    The deck also falls back to it without WebGL, and while printing (src/main.js puts html.no-js back). */
 
-.nojs-banner,
-.nojs-footer {
-  display: none;
-}
-
-html.no-js,
-html.no-js body {
-  height: auto;
-  overflow: auto;
-}
-
-html.no-js #stage,
-html.no-js #cards,
-html.no-js .labels,
-html.no-js .hud,
-html.no-js .rotate,
-html.no-js .backdrop:not(.backdrop-light) {
-  display: none;
-}
-
-html.no-js body {
-  /* Sizes read in a fixed unit: the 1920 design at 3/4 scale, floors on */
-  --u: 0.75px;
-  --fl: 1px;
-  padding: 0 16px;
-}
-
-html.no-js .nojs-banner {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  max-width: 720px;
-  margin: 24px auto;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--grey);
-}
-
-html.no-js .nojs-banner img {
-  width: 40px;
-  height: 40px;
-  flex: none;
-}
-
-html.no-js .nojs-banner p {
-  margin: 0;
-}
-
-html.no-js #stops {
-  display: block;
-  --u: 0.75px;
-}
-
-html.no-js .stop {
-  display: block;
-}
-
-html.no-js .card {
-  position: static;
-  width: auto;
-  min-width: 0;
-  max-width: 720px;
-  margin: 0 auto 24px;
-  opacity: 1;
-}
-
-html.no-js .card h1 {
-  font-size: clamp(36px, 11vw, 72px);
-}
-
-html.no-js .card h2 {
-  font-size: clamp(24px, 7vw, 39px);
-}
-
-html.no-js .card-hero {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-/* Every beat's content at once */
-html.no-js .reveal {
-  grid-template-rows: 1fr;
-  opacity: 1;
-}
-
-html.no-js .families.beats dd,
-html.no-js .roles {
-  color: var(--dark);
-}
-
-/* The closing links, on the light page */
-html.no-js .card-links h1 {
-  color: var(--dark);
-}
-
-html.no-js .card-links em {
-  color: var(--red);
-}
-
-html.no-js .card-links .card-num,
-html.no-js .links dd {
-  color: var(--grey);
-}
-
-html.no-js .links a {
-  color: var(--dark);
-  text-decoration: underline;
-  text-decoration-color: var(--red);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
-}
-
-html.no-js .nojs-footer {
-  display: block;
-  max-width: 720px;
-  margin: 0 auto 32px;
-  font-size: 12px;
-  color: var(--grey);
-}
-
-@media (max-width: 480px) {
-  html.no-js .families-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Printing: the reading version without its "open this file" banner, one card per block */
-@media print {
-  html.no-js .nojs-banner {
+@layer fallback {
+  .nojs-banner,
+  .nojs-footer {
     display: none;
   }
 
+  html.no-js,
+  html.no-js body {
+    height: auto;
+    overflow: auto;
+  }
+
+  html.no-js #stage,
+  html.no-js #cards,
+  html.no-js .labels,
+  html.no-js .hud,
+  html.no-js .rotate,
+  html.no-js .backdrop:not(.backdrop-light) {
+    display: none;
+  }
+
+  html.no-js body {
+    /* Sizes read in a fixed unit: the 1920 design at 3/4 scale, floors on */
+    --u: 0.75px;
+    --fl: 1px;
+    padding: 0 16px;
+  }
+
+  html.no-js .nojs-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 720px;
+    margin: 24px auto;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--grey);
+  }
+
+  html.no-js .nojs-banner img {
+    width: 40px;
+    height: 40px;
+    flex: none;
+  }
+
+  html.no-js .nojs-banner p {
+    margin: 0;
+  }
+
+  html.no-js #stops {
+    display: block;
+    --u: 0.75px;
+  }
+
+  html.no-js .stop {
+    display: block;
+  }
+
   html.no-js .card {
-    break-inside: avoid;
+    position: static;
+    width: auto;
+    min-width: 0;
+    max-width: 720px;
+    margin: 0 auto 24px;
+    opacity: 1;
+  }
+
+  html.no-js .card h1 {
+    font-size: clamp(36px, 11vw, 72px);
+  }
+
+  html.no-js .card h2 {
+    font-size: clamp(24px, 7vw, 39px);
+  }
+
+  html.no-js .card-hero {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Every beat's content at once */
+  html.no-js .reveal {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  html.no-js .families.beats dd,
+  html.no-js .roles {
+    color: var(--dark);
+  }
+
+  /* The closing links, on the light page */
+  html.no-js .card-links h1 {
+    color: var(--dark);
+  }
+
+  html.no-js .card-links em {
+    color: var(--red);
+  }
+
+  html.no-js .card-links .card-num,
+  html.no-js .links dd {
+    color: var(--grey);
+  }
+
+  html.no-js .links a {
+    color: var(--dark);
+    text-decoration: underline;
+    text-decoration-color: var(--red);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  html.no-js .nojs-footer {
+    display: block;
+    max-width: 720px;
+    margin: 0 auto 32px;
+    font-size: 12px;
+    color: var(--grey);
+  }
+
+  @media (max-width: 480px) {
+    html.no-js .families-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Printing: the reading version without its "open this file" banner, one card per block */
+  @media print {
+    html.no-js .nojs-banner {
+      display: none;
+    }
+
+    html.no-js .card {
+      break-inside: avoid;
+    }
   }
 }

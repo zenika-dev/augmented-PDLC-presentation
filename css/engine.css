@@ -1,676 +1,694 @@
 /* The engine stage: WebGL canvas with an HTML label layer on top. Everything opaque. */
 
-html,
-body {
-  margin: 0;
-  height: 100%;
-  overflow: hidden;
-  /* Phones: no pull-to-refresh or double-tap zoom; pinch zoom stays */
-  overscroll-behavior: none;
-  touch-action: manipulation;
-}
-
-body {
-  font-family: var(--font);
-  color: var(--fg);
-  background: #f2effa;
-}
-
-/* ---------- Themes: stacked backdrops cross-fade behind the transparent canvas ---------- */
-
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 900ms ease;
-  pointer-events: none;
-}
-
-/* Zenika pastel: the paper the line-art engine is drawn on */
-.backdrop-light { background: #f2effa; background: var(--grad-backdrop); opacity: 1; }
-.backdrop-dark { background: var(--dark); }
-.backdrop-core { background: var(--gradient-fallback); background: var(--grad-red); }
-.backdrop-blueprint { background: var(--dark); background: var(--grad-dark); }
-
-body[data-theme="dark"] .backdrop-dark,
-body[data-theme="core"] .backdrop-core,
-body[data-theme="blueprint"] .backdrop-blueprint {
-  opacity: 1;
-}
-
-#stage,
-#stage canvas,
-.engraving,
-.labels,
-#cards {
-  position: fixed;
-  inset: 0;
-}
-
-/* A change of set (data-set) is a cut: the stage and its names drop out, then fade back in */
-#stage,
-.labels {
-  transition: opacity 0.45s ease;
-}
-
-.is-cut #stage,
-.is-cut .labels {
-  opacity: 0;
-  transition: none;
-}
-
-/* Above the HUD (z-index 10): leader names may cross its veil */
-.labels {
-  z-index: 11;
-}
-
-.engraving,
-.labels,
-#cards {
-  pointer-events: none;
-  --u: min(calc(100vw / 1920), calc(100vh / 1080));
-  --u: min(calc(100vw / 1920), calc(100dvh / 1080));
-}
-
-/* Stops are data until main.js moves their cards into the label layer */
-#stops {
-  display: none;
-}
-
-/* ---------- Labels pinned on the engine ---------- */
-
-.label {
-  font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
-  font-weight: 800;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 500ms ease;
-}
-
-.label.is-on {
-  opacity: 1;
-}
-
-/* Rotated by alignToArc for names written along a lobe */
-.label-text {
-  display: inline-block;
-}
-
-.label-phase {
-  font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--label-ink);
-}
-
-/* Engraved on a lobe's outer face: one element per letter, hidden when the face turns away */
-.label-engraved {
-  font-size: 40px;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--engraved);
-  text-shadow: var(--engraved-shadow);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* Part labels: plain text, like the parts list of an exploded view */
-.label-gate,
-.label-gate-name {
-  font-weight: 700;
-  color: var(--label-ink);
-}
-
-.label-shape {
-  color: var(--label-shape);
-}
-
-.label-register,
-.label-level {
-  font-weight: 700;
-  color: var(--label-emph);
-}
-
-.label-band {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  font-size: max(calc(16 * var(--fl)), calc(30 * var(--u)));
-  color: var(--label-strong);
-  padding-right: 12px;
-  text-align: right;
-}
-
-.label-layer,
-.label-spine {
-  font-weight: 700;
-  color: var(--label-ink);
-}
-
-/* Numbered pins on a set (src/engine/sets.js): a gold disc that names a card's tile */
-.label-pin .label-text {
-  display: grid;
-  place-items: center;
-  width: max(calc(18 * var(--fl)), calc(34 * var(--u)));
-  height: max(calc(18 * var(--fl)), calc(34 * var(--u)));
-  border: 2px solid var(--art-red-line, #9e1028);
-  border-radius: 50%;
-  background: var(--art-red-hi, #ff7c8a);
-  color: var(--dark);
-  font-size: max(calc(11 * var(--fl)), calc(19 * var(--u)));
-  font-weight: 800;
-}
-
-/* Leader lines: a dot on the part, a thin diagonal, the name on a horizontal tail (src/leaders.js) */
-.lead {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  color: var(--lead-name);
-  --lead-ink: var(--lead-line);
-}
-
-.lead-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 1px;
-  overflow: visible;
-  fill: none;
-  stroke: var(--lead-ink);
-  stroke-width: 1.2;
-}
-
-.lead-line circle {
-  fill: var(--lead-ink);
-  stroke: var(--lead-dot-ring);
-  stroke-width: 1.5;
-}
-
-/* Name and note share one light box, so lines and parts behind never cut the text */
-.lead-box {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  width: max-content;
-  border-radius: 4px;
-  background: var(--lead-box);
-}
-
-/* Domain heading over the first name of a group, inside the same box */
-.lead-kicker {
-  display: block;
-  padding: 4px 8px 0;
-  font-size: max(calc(10 * var(--fl)), calc(15 * var(--u)));
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--lead-kicker);
-}
-
-.lead-text {
-  display: block;
-  padding: 2px 8px 3px;
-  border-bottom: 1.2px solid var(--lead-ink);
-  white-space: nowrap;
-}
-
-/* Note under the tail: what a gate checks, what a role is for */
-.lead-note {
-  display: none;
-  max-width: calc(340 * var(--u));
-  padding: 4px 8px 5px;
-  font-size: max(calc(12 * var(--fl)), calc(17 * var(--u)));
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--lead-note);
-  white-space: normal;
-}
-
-.lead.show-note .lead-note {
-  display: block;
-}
-
-.lead.label-role,
-.lead.is-energized {
-  --lead-ink: var(--lead-energy);
-  color: var(--lead-energy-name);
-}
-
-.lead.label-register,
-.lead.label-level {
-  --lead-ink: var(--lead-soft);
-}
-
-/* ---------- Annotation cards: one per stop, anchored next to what they explain ---------- */
-
-.card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
-  width: calc(640 * var(--u));
-  min-width: calc(300 * var(--fl)); /* phones: none, the card scales like the rest */
-  padding: calc(32 * var(--u)) calc(40 * var(--u));
-  border-radius: var(--radius);
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  -webkit-backdrop-filter: var(--panel-filter);
-  backdrop-filter: var(--panel-filter);
-  color: var(--card-fg, var(--fg));
-  opacity: 0;
-  transition: opacity 600ms ease;
-  pointer-events: none;
-}
-
-.card.is-on {
-  opacity: 1;
-  transition-delay: 700ms;
-}
-
-
-.card-num {
-  margin: 0 0 8px;
-  font-size: max(calc(13 * var(--fl)), calc(24 * var(--u)));
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--card-num, var(--ink-muted));
-}
-
-.card h1,
-.card h2 {
-  margin: 0;
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--ink-strong);
-}
-
-.card h1 { font-size: max(calc(32 * var(--fl)), calc(96 * var(--u))); }
-.card h2 { font-size: max(calc(22 * var(--fl)), calc(52 * var(--u))); }
-
-.card em {
-  font-style: normal;
-  color: var(--emph);
-}
-
-.card .sub {
-  margin: 12px 0 0;
-  font-size: max(calc(16 * var(--fl)), calc(32 * var(--u)));
-  font-weight: 700;
-  color: var(--sub, var(--ink-muted));
-}
-
-.card-hero {
-  width: calc(900 * var(--u));
-  background: none;
-  border: 0;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-.card-hero h1 {
-  text-shadow: var(--hero-shadow);
-}
-
-.card-wide {
-  width: calc(760 * var(--u));
-}
-
-.card-compact {
-  width: calc(480 * var(--u));
-  padding: calc(24 * var(--u)) calc(32 * var(--u));
-}
-
-.card-compact h2,
-.card-compact-title h2 {
-  font-size: max(calc(18 * var(--fl)), calc(40 * var(--u)));
-}
-
-/* Measurement families: one per beat */
-.families {
-  display: flex;
-  flex-direction: column;
-  gap: calc(10 * var(--u));
-  margin: calc(20 * var(--u)) 0 0;
-  font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
-  color: var(--ink-muted);
-}
-
-/* Two columns when a card lists four short items */
-.families-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(14 * var(--u)) calc(28 * var(--u));
-}
-
-.families dt {
-  font-size: 0.8em;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.families dd {
-  margin: 2px 0 0;
-  font-weight: 600;
-}
-
-/* Lists without beats read at full strength; with beats, only the current item does */
-.families:not(.beats) dd {
-  color: var(--ink);
-}
-
-.families [data-beat].is-now dt {
-  color: var(--emph);
-}
-
-.card-text {
-  margin: 16px 0 0;
-  font-size: max(calc(16 * var(--fl)), calc(28 * var(--u)));
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--ink);
-}
-
-.card-text + .card-text {
-  margin-top: 8px;
-}
-
-/* Descriptions: what a reader on their own needs to follow the step */
-.card-desc {
-  margin: calc(14 * var(--u)) 0 0;
-  font-size: max(calc(14 * var(--fl)), calc(22 * var(--u)));
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--ink);
-}
-
-.card-desc + .card-desc {
-  margin-top: calc(8 * var(--u));
-}
-
-/* Highlight tiles: numbered items, in one column or a grid (tiles-2, tiles-3). With beats, the current tile
-   fills and the others step back; before the first lit beat, all read at full strength. tiles-plain: no number */
-.tiles {
-  --tile-bg: var(--light-grey);
-  --tile-border: transparent;
-  --tile-fg: var(--dark);
-  --tile-muted: var(--grey);
-  --tile-badge-bg: var(--dark);
-  --tile-badge-fg: var(--white);
-  --tile-on-bg: var(--dark);
-  --tile-on-border: var(--dark);
-  --tile-on-fg: var(--white);
-  --tile-on-muted: rgb(255 255 255 / 0.8);
-  --tile-on-badge-bg: var(--accent);
-  --tile-on-badge-fg: var(--white);
-  display: grid;
-  gap: calc(12 * var(--u));
-  margin: calc(20 * var(--u)) 0 0;
-  counter-reset: tile;
-  font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
-}
-
-.tiles-2 { grid-template-columns: 1fr 1fr; }
-.tiles-3 { grid-template-columns: repeat(3, 1fr); }
-
-.tiles > * {
-  position: relative;
-  margin: 0;
-  padding: calc(14 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)) calc(64 * var(--u));
-  border: 1px solid var(--tile-border);
-  border-radius: 12px;
-  background: var(--tile-bg);
-  color: var(--tile-fg);
-  transition: opacity 450ms ease, background-color 450ms ease, border-color 450ms ease, color 450ms ease;
-}
-
-.tiles > *::before {
-  counter-increment: tile;
-  content: counter(tile);
-  position: absolute;
-  top: calc(14 * var(--u));
-  left: calc(16 * var(--u));
-  display: grid;
-  place-items: center;
-  width: calc(34 * var(--u));
-  height: calc(34 * var(--u));
-  border-radius: 50%;
-  background: var(--tile-badge-bg);
-  color: var(--tile-badge-fg);
-  font-size: 0.85em;
-  font-weight: 800;
-  transition: background-color 450ms ease, color 450ms ease;
-}
-
-.tiles-plain > * { padding-left: calc(18 * var(--u)); }
-.tiles-plain > *::before { content: none; }
-
-.tiles dt {
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.tiles dd {
-  margin: calc(4 * var(--u)) 0 0;
-  font-size: 0.92em;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--tile-muted);
-}
-
-.tiles dd + dd { margin-top: calc(8 * var(--u)); }
-
-.tiles.beats:has(.is-now) > :not(.is-now) { opacity: 0.42; }
-
-/* Phones: no room for the whole list, so a lit tile shows alone */
-@media (pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px) {
-  .tiles.beats:has(.is-now) > :not(.is-now) { display: none; }
-  .tiles.beats:not(:has(.is-now)) dd { display: none; }
-}
-
-.tiles.beats > [data-beat].is-now {
-  font-weight: inherit;
-  border-color: var(--tile-on-border);
-  background: var(--tile-on-bg);
-  color: var(--tile-on-fg);
-}
-
-.tiles.beats > [data-beat].is-now dd { color: var(--tile-on-muted); }
-
-.tiles.beats > [data-beat].is-now::before {
-  background: var(--tile-on-badge-bg);
-  color: var(--tile-on-badge-fg);
-}
-
-.families + .card-desc {
-  margin-top: calc(16 * var(--u));
-}
-
-/* Role names, one lit per beat */
-.roles {
-  margin: calc(14 * var(--u)) 0 0;
-  font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--ink-muted);
-}
-
-/* Who a group of roles serves: one team, or all teams */
-.roles-group {
-  display: block;
-  font-size: max(calc(11 * var(--fl)), calc(16 * var(--u)));
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-.roles + .card-desc {
-  margin-top: calc(16 * var(--u));
-}
-
-/* Closing stop: the links, on the dark backdrop */
-.card-links h1 {
-  color: var(--white);
-}
-
-.card-links em {
-  color: var(--accent-on-dark);
-}
-
-.card-links .card-num {
-  color: var(--footer-on-dark);
-}
-
-.links {
-  display: flex;
-  flex-direction: column;
-  gap: calc(20 * var(--u));
-  margin: calc(40 * var(--u)) 0 0;
-}
-
-.links dt {
-  font-size: max(calc(18 * var(--fl)), calc(40 * var(--u)));
-  font-weight: 800;
-}
-
-.card.is-on .links a {
-  color: var(--white);
-  text-decoration: underline;
-  text-decoration-color: var(--accent-on-dark);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
-  pointer-events: auto;
-}
-
-.links dd {
-  margin: 4px 0 0;
-  font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
-  font-weight: 600;
-  color: var(--footer-on-dark);
-}
-
-.card-kicker {
-  margin: calc(28 * var(--u)) 0 calc(10 * var(--u));
-  font-size: max(calc(12 * var(--fl)), calc(20 * var(--u)));
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--kicker, var(--emph));
-}
-
-/* The Comex questions, as asked; the HUD keeps their short names */
-.concerns {
-  display: flex;
-  flex-direction: column;
-  gap: calc(8 * var(--u));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
-  font-weight: 600;
-  color: var(--ink-muted);
-}
-
-/* French runs longer: a tighter list keeps the problem card off the footer at 1366×768 */
-:lang(fr) .concerns {
-  gap: calc(4 * var(--u));
-}
-
-.concerns li {
-  display: flex;
-  align-items: center;
-  gap: calc(12 * var(--u));
-}
-
-.concerns li::before {
-  content: "";
-  flex: none;
-  width: calc(12 * var(--u));
-  height: calc(12 * var(--u));
-  min-width: 8px;
-  min-height: 8px;
-  border-radius: 50%;
-  border: 1.5px solid var(--emph);
-  box-sizing: border-box;
-}
-
-/* Card items that appear from a given beat on */
-.reveal {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition: grid-template-rows 600ms ease, opacity 500ms ease;
-}
-
-.reveal > * {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.reveal.is-shown {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transition-delay: 0ms, 200ms;
-}
-
-/* Card items that light up one beat at a time */
-.beats [data-beat] {
-  transition: color 400ms ease;
-}
-
-.beats [data-beat].is-now {
-  color: var(--ink-lit, var(--dark));
-  font-weight: 800;
-}
-
-.todo {
-  margin: 16px 0 0;
-  padding: 12px 20px;
-  border: 2px dashed var(--grey);
-  border-radius: var(--radius);
-  font-size: max(calc(13 * var(--fl)), calc(24 * var(--u)));
-  line-height: 1.35;
-  color: var(--ink-muted);
-}
-
-/* Phones: a card has no room to grow, so what a beat reveals takes the place of the text above it
-   (src/main.js fades the text out, swaps, fades the new content in) */
-@media (pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px) {
-  .card:has(> .reveal.is-shown) > .card-text {
+@layer components {
+  html,
+  body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    /* Phones: no pull-to-refresh or double-tap zoom; pinch zoom stays */
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  body {
+    font-family: var(--font);
+    color: var(--fg);
+    background: #f2effa;
+  }
+
+  /* ---------- Themes: stacked backdrops cross-fade behind the transparent canvas ---------- */
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 900ms ease;
+    pointer-events: none;
+  }
+
+  /* Zenika pastel: the paper the line-art engine is drawn on */
+  .backdrop-light { background: #f2effa; background: var(--grad-backdrop); opacity: 1; }
+  .backdrop-dark { background: var(--dark); }
+  .backdrop-core { background: var(--gradient-fallback); background: var(--grad-red); }
+  .backdrop-blueprint { background: var(--dark); background: var(--grad-dark); }
+
+  body[data-theme="dark"] .backdrop-dark,
+  body[data-theme="core"] .backdrop-core,
+  body[data-theme="blueprint"] .backdrop-blueprint {
+    opacity: 1;
+  }
+
+  #stage,
+  #stage canvas,
+  .engraving,
+  .labels,
+  #cards {
+    position: fixed;
+    inset: 0;
+  }
+
+  /* A change of set (data-set) is a cut: the stage and its names drop out, then fade back in */
+  #stage,
+  .labels {
+    transition: opacity 0.45s ease;
+  }
+
+  .is-cut #stage,
+  .is-cut .labels {
+    opacity: 0;
+    transition: none;
+  }
+
+  /* Above the HUD (z-index 10): leader names may cross its veil */
+  .labels {
+    z-index: 11;
+  }
+
+  .engraving,
+  .labels,
+  #cards {
+    pointer-events: none;
+    --u: min(calc(100vw / 1920), calc(100vh / 1080));
+    --u: min(calc(100vw / 1920), calc(100dvh / 1080));
+  }
+
+  /* Stops are data until main.js moves their cards into the label layer */
+  #stops {
     display: none;
   }
 
-  .card > .card-text,
-  .card > .reveal {
+  /* ---------- Labels pinned on the engine ---------- */
+
+  .label {
+    font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
+    font-weight: 800;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 500ms ease;
+  }
+
+  .label.is-on {
+    opacity: 1;
+  }
+
+  /* Rotated by alignToArc for names written along a lobe */
+  .label-text {
+    display: inline-block;
+  }
+
+  .label-phase {
+    font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--label-ink);
+  }
+
+  /* Engraved on a lobe's outer face: one element per letter, hidden when the face turns away */
+  .label-engraved {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--engraved);
+    text-shadow: var(--engraved-shadow);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Part labels: plain text, like the parts list of an exploded view */
+  .label-gate,
+  .label-gate-name {
+    font-weight: 700;
+    color: var(--label-ink);
+  }
+
+  .label-shape {
+    color: var(--label-shape);
+  }
+
+  .label-register,
+  .label-level {
+    font-weight: 700;
+    color: var(--label-emph);
+  }
+
+  .label-band {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-size: max(calc(16 * var(--fl)), calc(30 * var(--u)));
+    color: var(--label-strong);
+    padding-right: 12px;
+    text-align: right;
+  }
+
+  .label-layer,
+  .label-spine {
+    font-weight: 700;
+    color: var(--label-ink);
+  }
+
+  /* Numbered pins on a set (src/engine/sets.js): a gold disc that names a card's tile */
+  .label-pin .label-text {
+    display: grid;
+    place-items: center;
+    width: max(calc(18 * var(--fl)), calc(34 * var(--u)));
+    height: max(calc(18 * var(--fl)), calc(34 * var(--u)));
+    border: 2px solid var(--art-red-line, #9e1028);
+    border-radius: 50%;
+    background: var(--art-red-hi, #ff7c8a);
+    color: var(--dark);
+    font-size: max(calc(11 * var(--fl)), calc(19 * var(--u)));
+    font-weight: 800;
+  }
+
+  /* Leader lines: a dot on the part, a thin diagonal, the name on a horizontal tail (src/leaders.js) */
+  .lead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: var(--lead-name);
+    --lead-ink: var(--lead-line);
+  }
+
+  .lead-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    fill: none;
+    stroke: var(--lead-ink);
+    stroke-width: 1.2;
+  }
+
+  .lead-line circle {
+    fill: var(--lead-ink);
+    stroke: var(--lead-dot-ring);
+    stroke-width: 1.5;
+  }
+
+  /* Name and note share one light box, so lines and parts behind never cut the text */
+  .lead-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    border-radius: 4px;
+    background: var(--lead-box);
+  }
+
+  /* Domain heading over the first name of a group, inside the same box */
+  .lead-kicker {
+    display: block;
+    padding: 4px 8px 0;
+    font-size: max(calc(10 * var(--fl)), calc(15 * var(--u)));
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lead-kicker);
+  }
+
+  .lead-text {
+    display: block;
+    padding: 2px 8px 3px;
+    border-bottom: 1.2px solid var(--lead-ink);
+    white-space: nowrap;
+  }
+
+  /* Note under the tail: what a gate checks, what a role is for */
+  .lead-note {
+    display: none;
+    max-width: calc(340 * var(--u));
+    padding: 4px 8px 5px;
+    font-size: max(calc(12 * var(--fl)), calc(17 * var(--u)));
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--lead-note);
+    white-space: normal;
+  }
+
+  .lead.show-note .lead-note {
+    display: block;
+  }
+
+  /* Phones: leader names keep a floor (the cards cannot grow there, the names can) */
+  html.phone .lead {
+    font-size: max(8.5px, calc(21 * var(--u)));
+  }
+
+  /* Short phones (an iPhone SE turned sideways): thirteen layer names must still fit one column */
+  @media (max-height: 380px) {
+    html.phone .lead {
+      font-size: max(calc(21 * var(--u)), min(8.5px, calc(22 * var(--u))));
+    }
+  }
+
+  html.phone .lead-kicker {
+    font-size: max(7.5px, calc(15 * var(--u)));
+  }
+
+  html.phone .lead-note {
+    font-size: max(7px, calc(17 * var(--u)));
+  }
+
+  .lead.label-role,
+  .lead.is-energized {
+    --lead-ink: var(--lead-energy);
+    color: var(--lead-energy-name);
+  }
+
+  .lead.label-register,
+  .lead.label-level {
+    --lead-ink: var(--lead-soft);
+  }
+
+  /* ---------- Annotation cards: one per stop, anchored next to what they explain ---------- */
+
+  .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    width: calc(640 * var(--u));
+    min-width: calc(300 * var(--fl)); /* phones: none, the card scales like the rest */
+    padding: calc(32 * var(--u)) calc(40 * var(--u));
+    border-radius: var(--radius);
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
+    -webkit-backdrop-filter: var(--panel-filter);
+    backdrop-filter: var(--panel-filter);
+    color: var(--card-fg, var(--fg));
+    opacity: 0;
+    transition: opacity 600ms ease;
+    pointer-events: none;
+  }
+
+  .card.is-on {
+    opacity: 1;
+    transition-delay: 700ms;
+  }
+
+
+  .card-num {
+    margin: 0 0 8px;
+    font-size: max(calc(13 * var(--fl)), calc(24 * var(--u)));
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--card-num, var(--ink-muted));
+  }
+
+  .card h1,
+  .card h2 {
+    margin: 0;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--ink-strong);
+  }
+
+  .card h1 { font-size: max(calc(32 * var(--fl)), calc(96 * var(--u))); }
+  .card h2 { font-size: max(calc(22 * var(--fl)), calc(52 * var(--u))); }
+
+  .card em {
+    font-style: normal;
+    color: var(--emph);
+  }
+
+  .card .sub {
+    margin: 12px 0 0;
+    font-size: max(calc(16 * var(--fl)), calc(32 * var(--u)));
+    font-weight: 700;
+    color: var(--sub, var(--ink-muted));
+  }
+
+  .card-hero {
+    width: calc(900 * var(--u));
+    background: none;
+    border: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .card-hero h1 {
+    text-shadow: var(--hero-shadow);
+  }
+
+  .card-wide {
+    width: calc(760 * var(--u));
+  }
+
+  .card-compact {
+    width: calc(480 * var(--u));
+    padding: calc(24 * var(--u)) calc(32 * var(--u));
+  }
+
+  .card-compact h2,
+  .card-compact-title h2 {
+    font-size: max(calc(18 * var(--fl)), calc(40 * var(--u)));
+  }
+
+  /* Measurement families: one per beat */
+  .families {
+    display: flex;
+    flex-direction: column;
+    gap: calc(10 * var(--u));
+    margin: calc(20 * var(--u)) 0 0;
+    font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+    color: var(--ink-muted);
+  }
+
+  /* Two columns when a card lists four short items */
+  .families-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(14 * var(--u)) calc(28 * var(--u));
+  }
+
+  .families dt {
+    font-size: 0.8em;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .families dd {
+    margin: 2px 0 0;
+    font-weight: 600;
+  }
+
+  /* Lists without beats read at full strength; with beats, only the current item does */
+  .families:not(.beats) dd {
+    color: var(--ink);
+  }
+
+  .families [data-beat].is-now dt {
+    color: var(--emph-small);
+  }
+
+  .card-text {
+    margin: 16px 0 0;
+    font-size: max(calc(16 * var(--fl)), calc(28 * var(--u)));
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+
+  .card-text + .card-text {
+    margin-top: 8px;
+  }
+
+  /* Descriptions: what a reader on their own needs to follow the step */
+  .card-desc {
+    margin: calc(14 * var(--u)) 0 0;
+    font-size: max(calc(14 * var(--fl)), calc(22 * var(--u)));
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  .card-desc + .card-desc {
+    margin-top: calc(8 * var(--u));
+  }
+
+  /* Highlight tiles: numbered items, in one column or a grid (tiles-2, tiles-3). With beats, the current tile
+     fills and the others step back; before the first lit beat, all read at full strength. tiles-plain: no number */
+  .tiles {
+    --tile-bg: var(--light-grey);
+    --tile-border: transparent;
+    --tile-fg: var(--dark);
+    --tile-muted: var(--grey);
+    --tile-badge-bg: var(--dark);
+    --tile-badge-fg: var(--white);
+    --tile-on-bg: var(--dark);
+    --tile-on-border: var(--dark);
+    --tile-on-fg: var(--white);
+    --tile-on-muted: rgb(255 255 255 / 0.8);
+    --tile-on-badge-bg: var(--accent);
+    --tile-on-badge-fg: var(--white);
+    display: grid;
+    gap: calc(12 * var(--u));
+    margin: calc(20 * var(--u)) 0 0;
+    counter-reset: tile;
+    font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+  }
+
+  .tiles-2 { grid-template-columns: 1fr 1fr; }
+  .tiles-3 { grid-template-columns: repeat(3, 1fr); }
+
+  .tiles > * {
+    position: relative;
+    margin: 0;
+    padding: calc(14 * var(--u)) calc(18 * var(--u)) calc(14 * var(--u)) calc(64 * var(--u));
+    border: 1px solid var(--tile-border);
+    border-radius: 12px;
+    background: var(--tile-bg);
+    color: var(--tile-fg);
+    transition: opacity 450ms ease, background-color 450ms ease, border-color 450ms ease, color 450ms ease;
+  }
+
+  .tiles > *::before {
+    counter-increment: tile;
+    content: counter(tile);
+    position: absolute;
+    top: calc(14 * var(--u));
+    left: calc(16 * var(--u));
+    display: grid;
+    place-items: center;
+    width: calc(34 * var(--u));
+    height: calc(34 * var(--u));
+    border-radius: 50%;
+    background: var(--tile-badge-bg);
+    color: var(--tile-badge-fg);
+    font-size: 0.85em;
+    font-weight: 800;
+    transition: background-color 450ms ease, color 450ms ease;
+  }
+
+  .tiles-plain > * { padding-left: calc(18 * var(--u)); }
+  .tiles-plain > *::before { content: none; }
+
+  .tiles dt {
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .tiles dd {
+    margin: calc(4 * var(--u)) 0 0;
+    font-size: 0.92em;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--tile-muted);
+  }
+
+  .tiles dd + dd { margin-top: calc(8 * var(--u)); }
+
+  .tiles.beats:has(.is-now) > :not(.is-now) { opacity: 0.42; }
+
+  /* Phones: no room for the whole list, so a lit tile shows alone */
+  html.phone .tiles.beats:has(.is-now) > :not(.is-now) { display: none; }
+  html.phone .tiles.beats:not(:has(.is-now)) dd { display: none; }
+
+
+  .tiles.beats > [data-beat].is-now {
+    font-weight: inherit;
+    border-color: var(--tile-on-border);
+    background: var(--tile-on-bg);
+    color: var(--tile-on-fg);
+  }
+
+  .tiles.beats > [data-beat].is-now dd { color: var(--tile-on-muted); }
+
+  .tiles.beats > [data-beat].is-now::before {
+    background: var(--tile-on-badge-bg);
+    color: var(--tile-on-badge-fg);
+  }
+
+  .families + .card-desc {
+    margin-top: calc(16 * var(--u));
+  }
+
+  /* Role names, one lit per beat */
+  .roles {
+    margin: calc(14 * var(--u)) 0 0;
+    font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  /* Who a group of roles serves: one team, or all teams */
+  .roles-group {
+    display: block;
+    font-size: max(calc(11 * var(--fl)), calc(16 * var(--u)));
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .roles + .card-desc {
+    margin-top: calc(16 * var(--u));
+  }
+
+  /* Closing stop: the links, on the dark backdrop */
+  .card-links h1 {
+    color: var(--white);
+  }
+
+  .card-links em {
+    color: var(--accent-on-dark);
+  }
+
+  .card-links .card-num {
+    color: var(--footer-on-dark);
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: calc(20 * var(--u));
+    margin: calc(40 * var(--u)) 0 0;
+  }
+
+  .links dt {
+    font-size: max(calc(18 * var(--fl)), calc(40 * var(--u)));
+    font-weight: 800;
+  }
+
+  .card.is-on .links a {
+    color: var(--white);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-on-dark);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    pointer-events: auto;
+  }
+
+  .links dd {
+    margin: 4px 0 0;
+    font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
+    font-weight: 600;
+    color: var(--footer-on-dark);
+  }
+
+  .card-kicker {
+    margin: calc(28 * var(--u)) 0 calc(10 * var(--u));
+    font-size: max(calc(12 * var(--fl)), calc(20 * var(--u)));
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--kicker, var(--emph-small));
+  }
+
+  /* The Comex questions, as asked; the HUD keeps their short names */
+  .concerns {
+    display: flex;
+    flex-direction: column;
+    gap: calc(8 * var(--u));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  /* French runs longer: a tighter list keeps the problem card off the footer at 1366×768 */
+  :lang(fr) .concerns {
+    gap: calc(4 * var(--u));
+  }
+
+  .concerns li {
+    display: flex;
+    align-items: center;
+    gap: calc(12 * var(--u));
+  }
+
+  .concerns li::before {
+    content: "";
+    flex: none;
+    width: calc(12 * var(--u));
+    height: calc(12 * var(--u));
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--emph);
+    box-sizing: border-box;
+  }
+
+  /* Card items that appear from a given beat on */
+  .reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 600ms ease, opacity 500ms ease;
+  }
+
+  .reveal > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .reveal.is-shown {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transition-delay: 0ms, 200ms;
+  }
+
+  /* Card items that light up one beat at a time */
+  .beats [data-beat] {
+    transition: color 400ms ease;
+  }
+
+  .beats [data-beat].is-now {
+    color: var(--ink-lit, var(--dark));
+    font-weight: 800;
+  }
+
+  .todo {
+    margin: 16px 0 0;
+    padding: 12px 20px;
+    border: 2px dashed var(--grey);
+    border-radius: var(--radius);
+    font-size: max(calc(13 * var(--fl)), calc(24 * var(--u)));
+    line-height: 1.35;
+    color: var(--ink-muted);
+  }
+
+  /* Phones: a card has no room to grow, so what a beat reveals takes the place of the text above it
+     (src/main.js fades the text out, swaps, fades the new content in) */
+  html.phone .card:has(> .reveal.is-shown) > .card-text {
+    display: none;
+  }
+  html.phone .card > .card-text,
+  html.phone .card > .reveal {
     transition: opacity 200ms ease;
   }
-
-  .card.is-swapping > .card-text,
-  .card.is-swapping > .reveal {
+  html.phone .card.is-swapping > .card-text,
+  html.phone .card.is-swapping > .reveal {
     opacity: 0;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .label,
-  .card,
-  .backdrop,
-  .reveal,
-  .reveal.is-shown {
-    transition: none;
+
+  @media (prefers-reduced-motion: reduce) {
+    .label,
+    .card,
+    .backdrop,
+    .reveal,
+    .reveal.is-shown {
+      transition: none;
+    }
   }
 }

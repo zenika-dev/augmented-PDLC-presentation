@@ -17,6 +17,7 @@ export function createHud(stops, reduceMotion) {
     checklist: document.querySelector(".hud-checklist"),
     source: document.querySelector(".hud-source"),
     counter: document.querySelector(".hud-counter"),
+    footer: document.querySelector(".hud-footer"),
   };
 
   // Screen readers hear one line per step, its number and its card's title, not the HUD's every change
@@ -102,6 +103,12 @@ export function createHud(stops, reduceMotion) {
 
   // The block's screen rectangle, measured once after each change or resize (undefined = to measure)
   let box;
+  // The footer's top edge, measured with the block (its text grows on phones)
+  let foot;
+  function footerTop() {
+    if (foot === undefined) foot = el.footer ? el.footer.getBoundingClientRect().top : window.innerHeight;
+    return foot;
+  }
 
   // The HUD for the beat on screen: section › part, how far through the section, the questions it speaks to
   function update(stop, b) {
@@ -136,7 +143,7 @@ export function createHud(stops, reduceMotion) {
     last = stop;
     applyTheme(stop);
     document.body.dataset.hud = shown.hud || "";
-    box = undefined;
+    box = foot = undefined;
   }
 
   // The top-left block as a screen rectangle grown by pad, or null when hidden. A page marked
@@ -164,7 +171,7 @@ export function createHud(stops, reduceMotion) {
     if (!!document.body.dataset.hudTight === on) return;
     if (on) document.body.dataset.hudTight = "";
     else delete document.body.dataset.hudTight;
-    box = undefined;
+    box = foot = undefined;
   }
 
   // Leaving the problem stop: its questions fly from the card into the checklist and stay there
@@ -186,12 +193,13 @@ export function createHud(stops, reduceMotion) {
   return {
     update,
     rect,
+    footerTop,
     tighten,
     compact,
     dock,
     // After a resize: measure the block again
     invalidate() {
-      box = undefined;
+      box = foot = undefined;
     },
   };
 }
