@@ -276,6 +276,54 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Previous and next arrows around the counter (hud.js): the switches' look, as tall as the footer's line
+     so the footer keeps its height (leader names keep clear of it) */
+  .hud-steps {
+    --step: calc(1.4 * var(--foot-size));
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    gap: calc(6 * var(--u));
+  }
+
+  .hud-step {
+    position: relative;
+    flex: none;
+    width: var(--step);
+    height: var(--step);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fg);
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0.75;
+    transition: opacity 200ms ease;
+  }
+
+  /* A 24px target at least, as for the switches */
+  .hud-step::before {
+    content: "";
+    position: absolute;
+    inset: min(0px, calc((var(--step) - 24px) / 2));
+  }
+
+  .hud-step:hover,
+  .hud-step:focus-visible {
+    opacity: 1;
+  }
+
+  .hud-step:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  .hud-step svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hud-nav,
     .hud-acts[data-ready] span,

@@ -1,5 +1,5 @@
 // Keyboard, touch and the URL. The hash is the counter's number (#6), with the beat after a dot from
-// the second beat on (#6.3).
+// the second beat on (#6.3). The footer's arrows (hud.js) are plain buttons.
 
 export function hashOf(index, beat) {
   return `#${index + 1}${beat > 0 ? `.${beat + 1}` : ""}`;
@@ -31,7 +31,8 @@ export function bindInput(deck) {
     e.preventDefault();
   });
 
-  // Swipe left or right, or tap the left or right half of the screen; links, buttons and pinches pass through
+  // Swipe left or up for next, right or down for previous, or tap the left or right half of the screen;
+  // links, buttons and pinches pass through
   let touch = null;
   let full = false;
   document.addEventListener(
@@ -55,8 +56,11 @@ export function bindInput(deck) {
     const t = e.changedTouches[0];
     const dx = t.clientX - touch.x;
     const dy = t.clientY - touch.y;
-    if (Math.abs(dx) > 40) (dx < 0 ? deck.next : deck.previous)();
-    else if (Math.hypot(dx, dy) < 10 && performance.now() - touch.at < 500) (t.clientX < window.innerWidth / 2 ? deck.previous : deck.next)();
+    // The longer axis decides: across like turning a page, up or down like scrolling one
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 40) {
+      const ahead = Math.abs(dx) >= Math.abs(dy) ? dx < 0 : dy < 0;
+      (ahead ? deck.next : deck.previous)();
+    } else if (Math.hypot(dx, dy) < 10 && performance.now() - touch.at < 500) (t.clientX < window.innerWidth / 2 ? deck.previous : deck.next)();
     touch = null;
   });
 

@@ -264,6 +264,7 @@ window.addEventListener("afterprint", () => {
 
 const { go, next, previous } = deck;
 bindInput({ next, previous, go, count: stops.length });
+hud.bindSteps({ next, previous });
 
 // Debug handle for headless checks
 window.deck = {

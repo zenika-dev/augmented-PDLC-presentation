@@ -2,7 +2,7 @@
 // (lit where the step speaks to them), the source line and the n / N counter.
 import { CONCERNS, SECTIONS, MENTION, LANG } from "./data.js";
 import { list, view } from "./stops.js";
-import { fillIcons } from "./icons.js";
+import { fillIcon, fillIcons } from "./icons.js";
 
 // One choice per page: on one origin (file://, a share) the public decks and a dark edition keep their own
 const THEME_KEY = `deck-theme:${location.pathname}`;
@@ -19,6 +19,25 @@ export function createHud(stops, reduceMotion) {
     counter: document.querySelector(".hud-counter"),
     footer: document.querySelector(".hud-footer"),
   };
+
+  // Previous and next arrows around the counter, for a mouse or a finger (main.js binds them to the deck);
+  // each is disabled at its end of the deck
+  const steps = ["previous", "next"].map((dir) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "hud-step";
+    b.dataset.dir = dir;
+    const fr = { previous: "Étape précédente", next: "Étape suivante" };
+    b.setAttribute("aria-label", LANG === "fr" ? fr[dir] : `${dir === "next" ? "Next" : "Previous"} step`);
+    fillIcon(b, dir);
+    return b;
+  });
+  if (el.counter) {
+    const wrap = document.createElement("span");
+    wrap.className = "hud-steps";
+    el.counter.replaceWith(wrap);
+    wrap.append(steps[0], el.counter, steps[1]);
+  }
 
   // Screen readers hear one line per step, its number and its card's title, not the HUD's every change
   const announce = document.createElement("p");
@@ -136,6 +155,8 @@ export function createHud(stops, reduceMotion) {
 
     el.source.textContent = [stop.data.source, MENTION].filter(Boolean).join(" · ");
     el.counter.textContent = `${stop.index + 1} / ${stops.length}`;
+    steps[0].disabled = stop.index === 0 && b === 0;
+    steps[1].disabled = stop.index === stops.length - 1 && b >= stop.beats.length - 1;
     if (stop !== last) {
       const title = stop.card?.querySelector("h1, h2")?.textContent.replace(/\s+/g, " ").trim();
       announce.textContent = stepLine(stop.index + 1, title);
@@ -195,6 +216,11 @@ export function createHud(stops, reduceMotion) {
     rect,
     footerTop,
     tighten,
+    // deck: { previous(), next() }, for the footer's arrows
+    bindSteps(deck) {
+      steps[0].addEventListener("click", () => deck.previous());
+      steps[1].addEventListener("click", () => deck.next());
+    },
     compact,
     dock,
     // After a resize: measure the block again

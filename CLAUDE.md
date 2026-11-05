@@ -13,7 +13,7 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 
 - Four pillars, one cylinder: the wheel on top, 13 layers in 5 bands under it, the Context Nexus column through the centre, people as a role lens on the parts.
 - Labels: leader lines (dot on the part, name on a tail, one light box), phase names on the lobes, engraved names on the napkin stop. No blur veils on labels; the HUD block has a light veil and leader names draw above it. Names are laid out automatically; a stop can pin a name with `data-lead-at` / `data-lead-at-phone` (step 5). A name turns red with its part when a beat energizes it.
-- HUD: Section › part breadcrumb over the seven pillars, one bar segment per pillar, the seven Comex questions lit where a step speaks to them, source and `n / N` counter. The URL is the counter: `#6`, `#6.3` (third beat).
+- HUD: Section › part breadcrumb over the seven pillars, one bar segment per pillar, the seven Comex questions lit where a step speaks to them, source and `n / N` counter between previous/next arrows (`hud.js`, icons from `icons.js`). The URL is the counter: `#6`, `#6.3` (third beat).
 - Motion lives in the camera, the running Idea and the energy pulse; respect `prefers-reduced-motion`.
 
 ## Vocabulary (do not mix variants)
@@ -46,7 +46,7 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 - The files to mail are `dist/the-augmented-pdlc.html` and `dist/the-augmented-pdlc.fr.html`: `npm run build` inlines the CSS, the bundle and the logo into a copy of `index.html` / `index.fr.html`. Never link a new external file without checking the build's inline step covers it.
 - Every change to a stop, beat or `data-*` attribute goes into both pages; only the text and `data-crumb` differ. The build fails when `index.fr.html` drifts from `index.html`.
 - `css/tokens.css` (brand and role tokens, the cascade layer order), `css/engine.css` (labels, cards), `css/hud.css`, `css/dark.css`, `css/fallback.css`: layers tokens → components → themes → fallback; small red text uses `--red-text` (`#c8102e`, ≥ 4.5:1). Nunito is vendored in `fonts/`.
-- Phones (coarse pointer, ≤600px in one dimension; the page head sets `html.phone`, CSS and scripts read it): font floors and the card minimum width off (`--fl`) except for leader names and the footer, HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move, a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
+- Phones (coarse pointer, ≤600px in one dimension; the page head sets `html.phone`, CSS and scripts read it): font floors and the card minimum width off (`--fl`) except for leader names and the footer, HUD questions hidden, safe-area insets, fullscreen on the first touch, tap either half or swipe to move (left or up: next; right or down: previous), a rotate overlay in portrait. A card's revealed items replace its text on phones. Without scripts (mail previewers) `css/fallback.css` shows the cards as a scrolling page.
 
 ## Client editions
 
