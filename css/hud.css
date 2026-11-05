@@ -276,6 +276,20 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* The deck's version before the counter, set by hand in each page (raise it at each delivery) */
+  .hud-meta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: calc(18 * var(--u));
+  }
+
+  .hud-version {
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--fg-muted);
+    opacity: 0.7;
+  }
+
   /* Previous and next arrows around the counter (hud.js): the switches' look, as tall as the footer's line
      so the footer keeps its height (leader names keep clear of it) */
   .hud-steps {

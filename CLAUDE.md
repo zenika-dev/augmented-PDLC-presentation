@@ -13,7 +13,7 @@ One 3D engine in clean line art on a pastel backdrop (anime.js look: white parts
 
 - Four pillars, one cylinder: the wheel on top, 13 layers in 5 bands under it, the Context Nexus column through the centre, people as a role lens on the parts.
 - Labels: leader lines (dot on the part, name on a tail, one light box), phase names on the lobes, engraved names on the napkin stop. No blur veils on labels; the HUD block has a light veil and leader names draw above it. Names are laid out automatically; a stop can pin a name with `data-lead-at` / `data-lead-at-phone` (step 5). A name turns red with its part when a beat energizes it.
-- HUD: Section › part breadcrumb over the seven pillars, one bar segment per pillar, the seven Comex questions lit where a step speaks to them, source and `n / N` counter between previous/next arrows (`hud.js`, icons from `icons.js`). The URL is the counter: `#6`, `#6.3` (third beat).
+- HUD: Section › part breadcrumb over the seven pillars, one bar segment per pillar, the seven Comex questions lit where a step speaks to them, source, a discreet version number (`.hud-version`, set by hand in each page; raise it at each delivery) and the `n / N` counter between previous/next arrows (`hud.js`, icons from `icons.js`). The URL is the counter: `#6`, `#6.3` (third beat).
 - Motion lives in the camera, the running Idea and the energy pulse; respect `prefers-reduced-motion`.
 
 ## Vocabulary (do not mix variants)

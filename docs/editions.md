@@ -7,6 +7,7 @@ A client edition is the deck retold for one client: its own stops, words, theme 
 - `index.html`: the stops, like `index.html` at the root, plus the edition block below. It links our CSS from `../../css/`, then its own `fonts.css` and `theme.css`, and loads `../../dist/deck.js`.
 - `<meta name="single-file" content="<file>.html">`: `npm run build` writes the mailed file to `editions/<name>/dist/<file>.html`.
 - `theme.css`: the client's palette and the role tokens (below).
+- The footer's version: `<span class="hud-meta"><span class="hud-version" aria-hidden="true">v0.1</span><span class="hud-counter"></span></span>`, set by hand and raised at each delivery, as in the public pages.
 - `private-terms.txt`: one word per line that must never reach the public repo; `npm run check:private` looks for them.
 
 ## The edition block
@@ -28,7 +29,7 @@ The build checks each stop's attributes against these lists (`scripts/lint-stops
 
 ## Theme
 
-The components read role tokens (`css/tokens.css`, on `body`): `--ink`, `--ink-strong`, `--ink-muted`, `--emph` (the red word in titles), `--emph-small` (small red text, from `--red-text`), `--panel-*`, `--label-*`, `--lead-*`, `--hud-veil`, `--crumb`, `--bar-track`, `--bar-fill`, `--question-now`. Optional ones fall back to a role: `--card-fg`, `--ink-lit`, `--kicker`, `--sub`, `--card-num`. An edition sets them on `body` for both themes and on `body[data-theme="dark"]` for its dark theme, rather than restyling components. Our stylesheets sit in cascade layers (tokens, components, themes, fallback); the edition's `theme.css` stays outside them, so its rules win without heavier selectors. Phone rules use `html.phone`, which the page head sets. `css/dark.css` is the public decks' dark theme, written the same way.
+The components read role tokens (`css/tokens.css`, on `body`): `--ink`, `--ink-strong`, `--ink-muted`, `--emph` (the red word in titles), `--emph-small` (small red text, from `--red-text`), `--panel-*`, `--label-*`, `--lead-*`, `--hud-veil`, `--crumb`, `--bar-track`, `--bar-fill`, `--question-now`. Optional ones fall back to a role: `--card-fg`, `--ink-lit`, `--kicker`, `--sub`, `--card-num`, `--lead-energy-note`. An edition sets them on `body` for both themes and on `body[data-theme="dark"]` for its dark theme, rather than restyling components. Our stylesheets sit in cascade layers (tokens, components, themes, fallback); the edition's `theme.css` stays outside them, so its rules win without heavier selectors. Phone rules use `html.phone`, which the page head sets. `css/dark.css` is the public decks' dark theme, written the same way.
 
 The engine's line art reads `--art-*` (light) and `--art-dark-*` (dark) on `:root` (`src/render/lineart.js`). A body with `data-theme-default="dark"` opens dark; a `.hud-theme` button lets the viewer switch.
 
