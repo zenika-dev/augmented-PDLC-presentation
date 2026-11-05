@@ -101,7 +101,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #4a4648;
+  color: var(--label-ink);
 }
 
 /* Engraved on a lobe's outer face: one element per letter, hidden when the face turns away */
@@ -109,8 +109,8 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: 40px;
   font-weight: 800;
   line-height: 1;
-  color: var(--grey);
-  text-shadow: 0 1px 0 #ffffff;
+  color: var(--engraved);
+  text-shadow: var(--engraved-shadow);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -119,17 +119,17 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 .label-gate,
 .label-gate-name {
   font-weight: 700;
-  color: #4a4648;
+  color: var(--label-ink);
 }
 
 .label-shape {
-  color: var(--raspberry);
+  color: var(--label-shape);
 }
 
 .label-register,
 .label-level {
   font-weight: 700;
-  color: var(--red);
+  color: var(--label-emph);
 }
 
 .label-band {
@@ -138,7 +138,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   align-items: flex-end;
   gap: 2px;
   font-size: max(calc(16 * var(--fl)), calc(30 * var(--u)));
-  color: var(--dark);
+  color: var(--label-strong);
   padding-right: 12px;
   text-align: right;
 }
@@ -146,7 +146,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 .label-layer,
 .label-spine {
   font-weight: 700;
-  color: #4a4648;
+  color: var(--label-ink);
 }
 
 /* Numbered pins on a set (src/engine/sets.js): a gold disc that names a card's tile */
@@ -173,8 +173,8 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
   font-weight: 700;
   letter-spacing: 0.2px;
-  color: #4a4648;
-  --lead-ink: #8b8590;
+  color: var(--lead-name);
+  --lead-ink: var(--lead-line);
 }
 
 .lead-line {
@@ -191,7 +191,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 
 .lead-line circle {
   fill: var(--lead-ink);
-  stroke: #ffffff;
+  stroke: var(--lead-dot-ring);
   stroke-width: 1.5;
 }
 
@@ -204,7 +204,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   flex-direction: column;
   width: max-content;
   border-radius: 4px;
-  background: rgb(255 255 255 / 0.74);
+  background: var(--lead-box);
 }
 
 /* Domain heading over the first name of a group, inside the same box */
@@ -215,7 +215,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--red);
+  color: var(--lead-kicker);
 }
 
 .lead-text {
@@ -233,7 +233,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: max(calc(12 * var(--fl)), calc(17 * var(--u)));
   font-weight: 600;
   line-height: 1.3;
-  color: #6f6a72;
+  color: var(--lead-note);
   white-space: normal;
 }
 
@@ -241,19 +241,15 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   display: block;
 }
 
-.lead.label-role {
-  --lead-ink: var(--red);
-  color: var(--dark);
-}
-
+.lead.label-role,
 .lead.is-energized {
-  --lead-ink: var(--red);
-  color: var(--dark);
+  --lead-ink: var(--lead-energy);
+  color: var(--lead-energy-name);
 }
 
 .lead.label-register,
 .lead.label-level {
-  --lead-ink: #f08494;
+  --lead-ink: var(--lead-soft);
 }
 
 /* ---------- Annotation cards: one per stop, anchored next to what they explain ---------- */
@@ -267,9 +263,12 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   min-width: calc(300 * var(--fl)); /* phones: none, the card scales like the rest */
   padding: calc(32 * var(--u)) calc(40 * var(--u));
   border-radius: var(--radius);
-  background: var(--white);
-  border: 1px solid #ffffff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  -webkit-backdrop-filter: var(--panel-filter);
+  backdrop-filter: var(--panel-filter);
+  color: var(--card-fg, var(--fg));
   opacity: 0;
   transition: opacity 600ms ease;
   pointer-events: none;
@@ -287,7 +286,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--grey);
+  color: var(--card-num, var(--ink-muted));
 }
 
 .card h1,
@@ -295,6 +294,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   margin: 0;
   font-weight: 800;
   line-height: 1.1;
+  color: var(--ink-strong);
 }
 
 .card h1 { font-size: max(calc(32 * var(--fl)), calc(96 * var(--u))); }
@@ -302,14 +302,14 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 
 .card em {
   font-style: normal;
-  color: var(--red);
+  color: var(--emph);
 }
 
 .card .sub {
   margin: 12px 0 0;
   font-size: max(calc(16 * var(--fl)), calc(32 * var(--u)));
   font-weight: 700;
-  color: var(--grey);
+  color: var(--sub, var(--ink-muted));
 }
 
 .card-hero {
@@ -317,6 +317,12 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   background: none;
   border: 0;
   box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.card-hero h1 {
+  text-shadow: var(--hero-shadow);
 }
 
 .card-wide {
@@ -340,7 +346,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   gap: calc(10 * var(--u));
   margin: calc(20 * var(--u)) 0 0;
   font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
-  color: var(--grey);
+  color: var(--ink-muted);
 }
 
 /* Two columns when a card lists four short items */
@@ -364,11 +370,11 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 
 /* Lists without beats read at full strength; with beats, only the current item does */
 .families:not(.beats) dd {
-  color: var(--dark);
+  color: var(--ink);
 }
 
 .families [data-beat].is-now dt {
-  color: var(--red);
+  color: var(--emph);
 }
 
 .card-text {
@@ -376,7 +382,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: max(calc(16 * var(--fl)), calc(28 * var(--u)));
   font-weight: 600;
   line-height: 1.35;
-  color: var(--dark);
+  color: var(--ink);
 }
 
 .card-text + .card-text {
@@ -389,7 +395,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: max(calc(14 * var(--fl)), calc(22 * var(--u)));
   font-weight: 600;
   line-height: 1.4;
-  color: var(--dark);
+  color: var(--ink);
 }
 
 .card-desc + .card-desc {
@@ -500,7 +506,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
   font-weight: 600;
   line-height: 1.5;
-  color: var(--grey);
+  color: var(--ink-muted);
 }
 
 /* Who a group of roles serves: one team, or all teams */
@@ -563,7 +569,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--red);
+  color: var(--kicker, var(--emph));
 }
 
 /* The Comex questions, as asked; the HUD keeps their short names */
@@ -576,7 +582,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   list-style: none;
   font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
   font-weight: 600;
-  color: var(--grey);
+  color: var(--ink-muted);
 }
 
 /* French runs longer: a tighter list keeps the problem card off the footer at 1366×768 */
@@ -598,7 +604,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   min-width: 8px;
   min-height: 8px;
   border-radius: 50%;
-  border: 1.5px solid var(--red);
+  border: 1.5px solid var(--emph);
   box-sizing: border-box;
 }
 
@@ -627,7 +633,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
 }
 
 .beats [data-beat].is-now {
-  color: var(--dark);
+  color: var(--ink-lit, var(--dark));
   font-weight: 800;
 }
 
@@ -638,7 +644,7 @@ body[data-theme="blueprint"] .backdrop-blueprint {
   border-radius: var(--radius);
   font-size: max(calc(13 * var(--fl)), calc(24 * var(--u)));
   line-height: 1.35;
-  color: var(--grey);
+  color: var(--ink-muted);
 }
 
 /* Phones: a card has no room to grow, so what a beat reveals takes the place of the text above it

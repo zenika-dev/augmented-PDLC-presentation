@@ -1,46 +1,55 @@
 /* Dark theme of the public decks (the .hud-theme switch). The engine turns to its blueprint palette
-   (src/main.js); here the backdrop, cards, labels, leader names and HUD follow. Never red text on dark:
-   --accent-on-dark. Client editions bring their own dark rules in their theme and do not load this file */
+   (src/main.js); here the role tokens (css/tokens.css) repaint the backdrop, cards, labels, leader names
+   and HUD. Never red text on dark: --accent-on-dark. Client editions set the same tokens in their theme
+   and do not load this file */
 
 body[data-theme="dark"] {
   --dark-panel: rgb(36 30 36 / 0.84);
   --dark-ink: #ebe6ec;
   --dark-muted: var(--footer-on-dark);
+
+  /* Cards */
+  --card-fg: var(--dark-ink);
+  --ink: var(--dark-ink);
+  --ink-strong: var(--white);
+  --ink-muted: var(--dark-muted);
+  --ink-lit: var(--white);
+  --emph: var(--accent-on-dark);
+  --panel-bg: var(--dark-panel);
+  --panel-border: rgb(255 255 255 / 0.1);
+  --panel-shadow: 0 2px 16px rgb(0 0 0 / 0.3);
+  --panel-filter: blur(6px);
+  --hero-shadow: 0 0 24px rgb(30 30 30 / 0.8);
+
+  /* Plain labels */
+  --label-ink: var(--dark-ink);
+  --label-strong: var(--dark-ink);
+  --label-emph: var(--accent-on-dark);
+  --label-shape: var(--accent-on-dark);
+  --engraved: var(--dark-muted);
+  --engraved-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
+
+  /* Leader names */
+  --lead-name: var(--white);
+  --lead-line: #9a929e;
+  --lead-energy: var(--accent-on-dark);
+  --lead-energy-name: var(--white);
+  --lead-box: rgb(36 30 36 / 0.78);
+  --lead-dot-ring: var(--dark);
+  --lead-kicker: var(--accent-on-dark);
+  --lead-note: var(--dark-muted);
+
+  /* HUD */
+  --hud-veil: rgb(30 30 30 / 0.55);
+  --bar-track: rgb(255 255 255 / 0.18);
+  --question-now: var(--white);
 }
 
 body[data-theme="dark"] .backdrop-dark {
   background: var(--grad-dark);
 }
 
-/* ---------- Cards ---------- */
-
-body[data-theme="dark"] .card:not(.card-hero) {
-  background: var(--dark-panel);
-  border-color: rgb(255 255 255 / 0.1);
-  box-shadow: 0 2px 16px rgb(0 0 0 / 0.3);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-}
-
-body[data-theme="dark"] .card { color: var(--dark-ink); }
-body[data-theme="dark"] .card h1,
-body[data-theme="dark"] .card h2 { color: var(--white); }
-body[data-theme="dark"] .card em,
-body[data-theme="dark"] .card-kicker,
-body[data-theme="dark"] .families [data-beat].is-now dt { color: var(--accent-on-dark); }
-body[data-theme="dark"] .card-num,
-body[data-theme="dark"] .card .sub,
-body[data-theme="dark"] .families,
-body[data-theme="dark"] .roles,
-body[data-theme="dark"] .concerns,
-body[data-theme="dark"] .todo { color: var(--dark-muted); }
-body[data-theme="dark"] .card-text,
-body[data-theme="dark"] .card-desc,
-body[data-theme="dark"] .families:not(.beats) dd { color: var(--dark-ink); }
-body[data-theme="dark"] .beats [data-beat].is-now { color: var(--white); }
-body[data-theme="dark"] .concerns li::before { border-color: var(--accent-on-dark); }
-body[data-theme="dark"] .card-hero h1 { text-shadow: 0 0 24px rgb(30 30 30 / 0.8); }
-
+/* Tiles keep their own tokens (css/engine.css .tiles) */
 body[data-theme="dark"] .tiles {
   --tile-bg: rgb(255 255 255 / 0.07);
   --tile-border: rgb(255 255 255 / 0.12);
@@ -55,33 +64,3 @@ body[data-theme="dark"] .tiles {
   --tile-on-badge-bg: var(--red);
   --tile-on-badge-fg: var(--white);
 }
-
-/* ---------- Labels and leader names ---------- */
-
-body[data-theme="dark"] .label-phase,
-body[data-theme="dark"] .label-gate,
-body[data-theme="dark"] .label-gate-name,
-body[data-theme="dark"] .label-band,
-body[data-theme="dark"] .label-layer,
-body[data-theme="dark"] .label-spine { color: var(--dark-ink); }
-body[data-theme="dark"] .label-shape,
-body[data-theme="dark"] .label-register,
-body[data-theme="dark"] .label-level { color: var(--accent-on-dark); }
-body[data-theme="dark"] .label-engraved {
-  color: var(--dark-muted);
-  text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
-}
-
-body[data-theme="dark"] .lead { color: var(--white); --lead-ink: #9a929e; }
-body[data-theme="dark"] .lead-box { background: rgb(36 30 36 / 0.78); }
-body[data-theme="dark"] .lead-line circle { stroke: var(--dark); }
-body[data-theme="dark"] .lead-kicker { color: var(--accent-on-dark); }
-body[data-theme="dark"] .lead-note { color: var(--dark-muted); }
-body[data-theme="dark"] .lead.label-role,
-body[data-theme="dark"] .lead.is-energized { --lead-ink: var(--accent-on-dark); color: var(--white); }
-
-/* ---------- HUD ---------- */
-
-body[data-theme="dark"] .hud-nav { background: rgb(30 30 30 / 0.55); }
-body[data-theme="dark"] .hud-acts li { background: rgb(255 255 255 / 0.18); }
-body[data-theme="dark"] .hud-checklist li.is-now { color: var(--white); }

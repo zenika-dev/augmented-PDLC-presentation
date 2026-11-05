@@ -41,7 +41,7 @@
   margin: calc(-12 * var(--u)) 0 0 calc(-16 * var(--u));
   padding: calc(12 * var(--u)) calc(16 * var(--u));
   border-radius: 12px;
-  background: rgb(255 255 255 / 0.55);
+  background: var(--hud-veil);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   transition: opacity 500ms ease;
@@ -64,6 +64,7 @@ body[data-hud="crumb"] .hud-checklist {
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
+  color: var(--crumb);
 }
 
 .hud-crumb::before {
@@ -100,7 +101,7 @@ body[data-hud="crumb"] .hud-checklist {
   flex: 1;
   height: 3px;
   border-radius: 2px;
-  background: rgb(30 30 30 / 0.14);
+  background: var(--bar-track);
   overflow: hidden;
 }
 
@@ -108,7 +109,7 @@ body[data-hud="crumb"] .hud-checklist {
   display: block;
   width: 0;
   height: 100%;
-  background: var(--grad-red);
+  background: var(--bar-fill);
 }
 
 .hud-acts[data-ready] span {
@@ -133,7 +134,7 @@ body[data-hud="crumb"] .hud-checklist {
 
 /* What this step speaks to: dark and bold; the others stay muted */
 .hud-checklist li.is-now {
-  color: var(--dark);
+  color: var(--question-now);
   font-weight: 800;
 }
 
@@ -177,6 +178,14 @@ body[data-hud="crumb"] .hud-checklist {
 .hud-theme[hidden],
 .hud-fullscreen[hidden] {
   display: none;
+}
+
+/* A 24px target at least (WCAG 2.5.8), whatever the icon's size: the hit area reaches past a small icon */
+.hud-theme::before,
+.hud-fullscreen::before {
+  content: "";
+  position: absolute;
+  inset: min(0px, calc((var(--switch) - 24px) / 2));
 }
 
 .hud-theme:hover,

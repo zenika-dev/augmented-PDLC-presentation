@@ -25,44 +25,58 @@
   --grad-backdrop: linear-gradient(90deg, #fff6f5 6%, #e3e8fc 100%);
   /* Closing stop: brand dark towards a raspberry-tinted black, never pure #000 */
   --grad-dark: linear-gradient(135deg, #1e1e1e 0%, #2b1622 100%);
-  --grad-blue: linear-gradient(135deg, #3f86ee 0%, #5a6fe0 100%);
-  --grad-sunset: linear-gradient(135deg, #e8664f 0%, #f0a02c 100%);
-  --grad-violet: linear-gradient(135deg, #8a63e8 0%, #5f78e0 100%);
-
-  /* Domain chips: one colour = one meaning across the deck */
-  --dom-discover-bg: #fdebd0;      --dom-discover-fg: #7a4700;       /* orange: product */
-  --dom-build-bg: #dce9fb;         --dom-build-fg: #1a4a8a;          /* blue: tooling, dev */
-  --dom-platform-bg: #e8e1fb;      --dom-platform-fg: #4527a0;       /* violet: security, control */
-  --dom-contextualise-bg: #fde3e7; --dom-contextualise-fg: #a5122a;  /* red: knowledge */
-  --dom-measure-bg: #d8f3e6;       --dom-measure-fg: #0b6540;        /* green: measurement */
-  --dom-neutral-bg: #ececec;       --dom-neutral-fg: #444444;        /* grey: watch, neutral */
 
   /* Type */
   --font: "Nunito", Arial, sans-serif;
-  --fs-hero: 144px;
-  --fs-giant: 260px;
-  --fs-divider-num: 160px;
-  --fs-punch: 88px;
-  --fs-closing: 96px;
-  --fs-h2: 60px;
-  --fs-sub: 32px;
-  --fs-h3: 34px;
-  --fs-body: 28px;
-  --fs-label: 24px;
 
   /* Shape */
   --radius: 16px;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
 
   /* Theme (surface by default) — switched by body[data-theme] */
   --bg: var(--white);
   --fg: var(--dark);
   --fg-muted: var(--grey);
   --accent: var(--red);
-  --card-bg: var(--white);
-  --card-border: var(--light-grey);
-  --map-line: var(--rule-grey);
   --halo: rgba(245, 241, 247, 0.9); /* glow behind HUD text that sits on the engine */
+}
+
+/* Roles: what the components read. A theme (css/dark.css, a client edition) repaints the deck by setting
+   these on body or body[data-theme=…], not by restyling components. Declared on body, not :root, so the
+   ones built on --fg follow body[data-theme] */
+body {
+  /* Cards */
+  --ink: var(--dark);              /* body text, lit items */
+  --ink-strong: var(--fg);         /* titles */
+  --ink-muted: var(--grey);        /* numbers, subtitles, lists not yet lit */
+  --emph: var(--red);              /* the red word, kickers, the lit item's name */
+  --panel-bg: var(--white);
+  --panel-border: #ffffff;
+  --panel-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --panel-filter: none;            /* backdrop-filter behind the card */
+  --hero-shadow: none;             /* behind the title stops' large name */
+  /* Plain labels on the engine */
+  --label-ink: #4a4648;            /* phases, gates, layers, the spine */
+  --label-strong: var(--dark);     /* domain names */
+  --label-emph: var(--red);        /* registers, levels */
+  --label-shape: var(--raspberry);
+  --engraved: var(--grey);
+  --engraved-shadow: 0 1px 0 #ffffff;
+  /* Leader names */
+  --lead-name: #4a4648;
+  --lead-line: #8b8590;
+  --lead-soft: #f08494;            /* lines to registers and levels */
+  --lead-energy: var(--red);       /* line of an energized part or a role */
+  --lead-energy-name: var(--dark); /* its name */
+  --lead-box: rgb(255 255 255 / 0.74);
+  --lead-dot-ring: #ffffff;
+  --lead-kicker: var(--red);
+  --lead-note: #6f6a72;
+  /* HUD */
+  --hud-veil: rgb(255 255 255 / 0.55);
+  --crumb: var(--fg);
+  --bar-track: rgb(30 30 30 / 0.14);
+  --bar-fill: var(--grad-red);
+  --question-now: var(--dark);
 }
 
 body[data-theme="dark"],
@@ -71,9 +85,6 @@ body[data-theme="core"] {
   --fg: var(--white);
   --fg-muted: var(--footer-on-dark);
   --accent: var(--accent-on-dark);
-  --card-bg: #2a2a2a;
-  --card-border: #3a3a3a;
-  --map-line: #4a4a4a;
   --halo: rgba(32, 26, 32, 0.9);
 }
 
