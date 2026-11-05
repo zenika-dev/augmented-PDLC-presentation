@@ -18,7 +18,7 @@ function aside(az, k, y = 0) {
   return polar(k, az - 90, y);
 }
 
-const SHOTS = {
+export const SHOTS = {
   hero: orbit(135, 22, 29, aside(135, 0, -1.4), 10),
   "hero-right": orbit(135, 22, 35.5, aside(135, -6, -1.4), 10),
   "top-right": orbit(165, 62, 31, aside(165, -3.4, 0.4)),
