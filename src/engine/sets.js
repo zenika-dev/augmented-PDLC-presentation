@@ -81,8 +81,9 @@ const POINTS = {
     "zone:human": [null, polar(3.1, -60, 0.4), ["zones"]],
     "zone:hybrid": [null, polar(3.1, 36, 0.4), ["zones"]],
     "zone:ai": [null, polar(3.1, 96, 0.4), ["zones"]],
-    ceiling: [null, polar(3.4, 69.6, 0.9), ["ceiling"]],
-    needle: [null, polar(2.6, 69.6, 0.4), ["needle"]],
+    // These two ride on their parts, which turn to the value a beat sets
+    ceiling: ["ceiling-block", polar(3.4, 0, 0.9), ["ceiling"]],
+    needle: ["needle", polar(2.6, 0, 0.4), ["needle"]],
     "ring:score": [null, polar(2.05, -96, 0.35), ["rings"]],
     "ring:rule": [null, polar(1.65, -72, 0.35), ["rings"]],
     "ring:ceiling": [null, polar(1.25, -48, 0.35), ["rings"]],

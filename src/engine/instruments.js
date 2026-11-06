@@ -165,7 +165,7 @@ export function instrumentPanel(tags, { throughput = 0.66, stability = 0.7, prod
 }
 
 // The contract: an autonomy dial lying flat, three zones (Full human ≤ 50, Hybrid 51–79, Full AI ≥ 80, hatched as
-// locked), a needle at the task's score and a stop pin at the ceiling the foundations allow. value and ceiling 0–100.
+// locked once a rule or the ceiling falls below it), a needle at the task's score and a stop pin at the ceiling the foundations allow. value and ceiling 0–100.
 export function buildAutonomyDial({ score = 72, rule = 100, ceiling = 79 } = {}) {
   const g = new THREE.Group();
   g.name = "autonomy";
@@ -190,13 +190,15 @@ export function buildAutonomyDial({ score = 72, rule = 100, ceiling = 79 } = {})
     z.position.y = 0.32;
     g.add(z);
   });
-  // Locked: hatching across the Full AI zone
+  // Locked: hatching across the Full AI zone, once a limit keeps the needle out of it
+  const hatch = new THREE.Group();
   for (let v = 81; v < 100; v += 2) {
     const h = box(0.05, 0.05, r * 0.15, [...tags, "zone:ai"], INK);
     h.position.copy(polar(r * 0.78, at(v), 0.36));
     h.rotation.y = -at(v) * RAD + 0.5;
-    g.add(h);
+    hatch.add(h);
   }
+  g.add(hatch);
   for (let v = 0; v <= 100; v += 5) {
     const t = box(0.07, 0.06, v % 50 === 0 ? 0.7 : v % 10 === 0 ? 0.45 : 0.25, tags, INK);
     t.position.copy(polar(r * 0.6 - (v % 10 === 0 ? 0 : 0.1), at(v), 0.2));
@@ -227,6 +229,7 @@ export function buildAutonomyDial({ score = 72, rule = 100, ceiling = 79 } = {})
   };
   // The ceiling block: a raised bar across the rings and the zones, where the limit stands
   const block = new THREE.Group();
+  block.name = "ceiling-block";
   const bar = box(0.36, 0.55, r * 0.92 - 0.95, [...tags, "ceiling"], INK);
   bar.position.set(0, 0.45, -(0.95 + r * 0.92) / 2);
   const cap = box(0.5, 0.12, 0.5, [...tags, "ceiling", "energy"]);
@@ -250,6 +253,7 @@ export function buildAutonomyDial({ score = 72, rule = 100, ceiling = 79 } = {})
     shape(rings[2], ceiling, shown.includes("ceiling"));
     block.visible = shown.includes("ceiling") && ceiling < 99.5;
     block.rotation.y = -at(ceiling) * RAD;
+    hatch.visible = Math.min(shown.includes("rule") ? rule : 100, shown.includes("ceiling") ? ceiling : 100) < 80;
     needle.rotation.y = -at(Math.min(score, rule, ceiling)) * RAD;
   };
   g.userData.set({ score, rule, ceiling });
