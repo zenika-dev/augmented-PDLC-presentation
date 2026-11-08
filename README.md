@@ -13,7 +13,7 @@ Clone the repository, open Claude Code at its root and type `/welcome`: it check
 
 ## View the decks
 
-Open `dist/index.html`, or a deck's file directly. Arrow keys, space, a swipe or a tap on either half of the screen move through the steps. The URL keeps the step: `#6` is step 6, `#6.2` its second beat.
+Online: https://zenika-dev.github.io/augmented-PDLC-presentation/ (GitHub Pages, published from `dist/` on each push to `main`). Locally: open `dist/index.html`, or a deck's file directly; the download icon in front of each link saves the self-contained file. Arrow keys, space, a swipe or a tap on either half of the screen move through the steps. The URL keeps the step: `#6` is step 6, `#6.2` its second beat.
 
 ## Build it
 

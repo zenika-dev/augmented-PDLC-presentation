@@ -26,6 +26,7 @@ Zenika's line-art decks, each a package under `decks/`, all built on the deck fr
 ## Repository
 
 - Public: github.com/zenika-dev/augmented-PDLC-presentation. Work on `main` and push only `main`.
-- `feat/three-engine` and `feat/map-skeleton` are a local archive whose history holds material that must stay private: never push them, never `git push --all` or `--mirror`.
+- GitHub Pages serves `dist/` at https://zenika-dev.github.io/augmented-PDLC-presentation/: a push to `main` that changes `dist/` publishes it (`.github/workflows/pages.yml`, no build in CI: the committed `dist/` is what goes live).
+- `feat/three-engine`, `feat/map-skeleton` and `feat/deck-packages` are a local archive whose history holds material that must stay private: never push them, never `git push --all` or `--mirror`.
 - Before every push, run `npm run check:private` (nothing tracked under `editions/`, no term from `editions/*/private-terms.txt` in the tree or the unpushed commits) and grep the commit for client names, references to internal or client documents, pricing and personal emails. Footer stays `© ZENIKA 2026 · All Rights Reserved` (FR: `© ZENIKA 2026 · Tous droits réservés`); no licence file.
 - The Anthropic `pdf` and `pptx` agent skills stay local (gitignored); the other skills in `.agents/` are MIT or Apache.
