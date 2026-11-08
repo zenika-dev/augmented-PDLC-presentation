@@ -1,0 +1,209 @@
+/* The augmented PDLC's own stylesheet, on top of framework/css/: the engine's labels and card blocks (phases,
+   gates, bands, layers, the role lens, the measure families, the questions as asked). The deck's theme is the
+   framework's own (Zenika's), so it has no @layer deck block: its label tokens are defaults in @layer tokens,
+   which framework/css/dark.css and an edition's theme repaint. The programme rollout and the editions link it
+   too. The label classes below style plain labels; a leader name carrying one keeps the .lead look */
+
+/* The plain labels' colours: role tokens, repainted by framework/css/dark.css and by an edition */
+@layer tokens {
+  body {
+    --label-ink: #4a4648;            /* phases, gates, layers, the spine */
+    --label-strong: var(--dark);     /* domain names */
+    --label-emph: var(--red-text);   /* registers, levels */
+    --label-shape: var(--raspberry);
+    --lead-soft: #f08494;            /* lines to registers and levels */
+  }
+}
+
+@layer components {
+  /* Phones: a little wider than the framework's card, so a title holds on one line more often */
+  html.phone .card { min-width: calc(340 * var(--fl)); }
+
+  .label-phase:not(.lead) {
+    font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--label-ink);
+  }
+
+  /* Part labels: plain text, like the parts list of an exploded view */
+  .label-gate:not(.lead),
+  .label-gate-name:not(.lead) {
+    font-weight: 700;
+    color: var(--label-ink);
+  }
+
+  .label-shape:not(.lead) {
+    color: var(--label-shape);
+  }
+
+  .label-register:not(.lead),
+  .label-level:not(.lead) {
+    font-weight: 700;
+    color: var(--label-emph);
+  }
+
+  .label-band:not(.lead) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-size: max(calc(16 * var(--fl)), calc(30 * var(--u)));
+    color: var(--label-strong);
+    padding-right: 12px;
+    text-align: right;
+  }
+
+  .label-layer:not(.lead),
+  .label-spine:not(.lead) {
+    font-weight: 700;
+    color: var(--label-ink);
+  }
+
+  /* Numbered pins on a set (src/engine/sets.js): a gold disc that names a card's tile */
+  .label-pin .label-text {
+    display: grid;
+    place-items: center;
+    width: max(calc(18 * var(--fl)), calc(34 * var(--u)));
+    height: max(calc(18 * var(--fl)), calc(34 * var(--u)));
+    border: 2px solid var(--art-energy-line, var(--art-red-line, #9e1028));
+    border-radius: 50%;
+    background: var(--art-energy-hi, var(--art-red-hi, #ff7c8a));
+    color: var(--dark);
+    font-size: max(calc(11.25 * var(--fl)), calc(19 * var(--u)));
+    font-weight: 800;
+  }
+
+  /* Softer lines to registers and levels (an energized one keeps the energy colour) */
+  .lead.label-register:not(.is-energized),
+  .lead.label-level:not(.is-energized) {
+    --lead-ink: var(--lead-soft);
+  }
+
+  /* Measurement families: one per beat */
+  .families {
+    display: flex;
+    flex-direction: column;
+    gap: calc(10 * var(--u));
+    margin: calc(20 * var(--u)) 0 0;
+    font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+    color: var(--ink-muted);
+  }
+
+  /* Two columns when a card lists four short items */
+  .families-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(14 * var(--u)) calc(28 * var(--u));
+  }
+
+  /* Small capitals: never under the floor (11.25 × --fl: 9px on a phone) */
+  .families dt {
+    font-size: max(calc(11.25 * var(--fl)), 0.8em);
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .families dd {
+    margin: 2px 0 0;
+    font-weight: 600;
+  }
+
+  /* Lists without beats read at full strength; with beats, only the current item does */
+  .families:not(.beats) dd {
+    color: var(--ink);
+  }
+
+  .families [data-beat].is-now dt {
+    color: var(--emph-small);
+  }
+
+  /* Phones: with beats, only the lit family keeps its description (as tiles do); without, each name runs
+     into its description */
+  html.phone .families.beats:has(.is-now) > :not(.is-now) dd { display: none; }
+  html.phone .families:not(.beats) dt { display: inline; margin-right: 0.5em; }
+  html.phone .families:not(.beats) dd { display: inline; }
+
+  .families + .card-desc {
+    margin-top: calc(16 * var(--u));
+  }
+
+  /* Role names, one lit per beat */
+  .roles {
+    margin: calc(14 * var(--u)) 0 0;
+    font-size: max(calc(13 * var(--fl)), calc(21 * var(--u)));
+    font-weight: 600;
+    line-height: 1.5;
+    /* Darker than the muted ink: the roles not yet lit read over the exploded engine behind the glass */
+    color: color-mix(in srgb, var(--ink-muted) 80%, var(--ink));
+  }
+
+  /* Who a group of roles serves: one team, or all teams */
+  .roles-group {
+    display: block;
+    font-size: max(calc(11.25 * var(--fl)), calc(16 * var(--u)));
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .roles + .card-desc {
+    margin-top: calc(16 * var(--u));
+  }
+
+  /* The Comex questions, as asked; the HUD keeps their short names */
+  .concerns {
+    display: flex;
+    flex-direction: column;
+    gap: calc(8 * var(--u));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: max(calc(14 * var(--fl)), calc(24 * var(--u)));
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  /* French runs longer: a tighter list keeps the problem card off the footer at 1366×768 */
+  :lang(fr) .concerns {
+    gap: calc(4 * var(--u));
+  }
+
+  .concerns li {
+    display: flex;
+    align-items: center;
+    gap: calc(12 * var(--u));
+  }
+
+  .concerns li::before {
+    content: "";
+    flex: none;
+    width: calc(12 * var(--u));
+    height: calc(12 * var(--u));
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--emph);
+    box-sizing: border-box;
+  }
+
+  /* A role's name on its first part, in the energy colour */
+  .lead.label-role {
+    --lead-ink: var(--lead-energy);
+    color: var(--lead-energy-name);
+  }
+}
+
+@layer fallback {
+  html.no-js .families.beats dd,
+  html.no-js .roles {
+    color: var(--dark);
+  }
+
+  @media (max-width: 480px) {
+    html.no-js .families-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none" stroke="#1e1e1e" stroke-width="2" stroke-linejoin="round">
+  <!-- Subject reference: the starter machine, a square base plate with a round core standing in its centre -->
+  <path d="M200 170 L340 220 L200 270 L60 220 Z" fill="#fff"/>
+  <path d="M60 220 L60 235 L200 285 L340 235 L340 220"/>
+  <path d="M200 270 L200 285"/>
+  <ellipse cx="200" cy="220" rx="42" ry="15"/>
+  <path d="M158 220 L158 90 M242 220 L242 90" />
+  <ellipse cx="200" cy="90" rx="42" ry="15" fill="#fff"/>
+  <path d="M158 140 Q200 158 242 140" stroke-width="1.5"/>
+</svg>

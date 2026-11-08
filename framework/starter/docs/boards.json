@@ -1,0 +1,9 @@
+{
+  "canvas": null,
+  "round": 1,
+  "stops": {
+    "s01": { "shot": "wide, three-quarter from above", "subjects": ["subject-machine.svg"], "leaders": ["Base plate", "Core"], "red": "Parts" },
+    "s02": { "shot": "close on the core", "subjects": ["subject-machine.svg"], "leaders": ["Core"], "red": "Lifts" },
+    "s03": { "shot": "the bench, from the side", "leaders": ["Test bench"], "red": "Own", "note": "a cut from s02" }
+  }
+}

@@ -1,0 +1,288 @@
+/* The programme rollout's own stylesheet, on top of framework/css/ and the keynote's (../augmented-pdlc/css/deck.css):
+   its cards (plain lists, pills, tags, quotes, the bar note, the next-steps plan, the themes board, the
+   capability's ID card, the app screenshot, the closing pillars), which read the role tokens
+   (framework/css/tokens.css), and its theme in @layer deck: the Dusk dark backdrop and its tints. */
+
+@layer components {
+  /* The title stop: a large name over the rocket */
+  .card-hero h1 { font-size: max(calc(56 * var(--fl)), calc(150 * var(--u))); line-height: 1.02; letter-spacing: -1px; }
+  /* The title stop: wide enough for the name on two lines */
+  .card-hero:not(.card-closing) { width: calc(1060 * var(--u)); }
+  .card-hero:not(.card-closing) h1 { font-size: max(calc(48 * var(--fl)), calc(122 * var(--u))); }
+  .card-hero .sub { font-size: max(calc(18 * var(--fl)), calc(36 * var(--u))); }
+  .card-hero .card-text { font-size: max(calc(14 * var(--fl)), calc(24 * var(--u))); color: var(--ink-muted); }
+  /* Phones: the title keeps clear of the footer */
+  html.phone .card-hero:not(.card-closing) h1 { font-size: calc(112 * var(--u)); }
+  html.phone .card-hero:not(.card-closing) .card-text { display: none; }
+
+  /* Pills under a grid of tiles */
+  .pills {
+    display: flex;
+    gap: calc(12 * var(--u));
+    margin: calc(12 * var(--u)) 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: max(calc(12 * var(--fl)), calc(19 * var(--u)));
+    font-weight: 800;
+  }
+  .pills li {
+    flex: 1;
+    padding: calc(8 * var(--u)) calc(14 * var(--u));
+    border-radius: 999px;
+    text-align: center;
+    background: rgb(238 34 56 / 0.1);
+    color: var(--ink);
+  }
+
+  /* A tag beside a tile's name (The PDLC harness, The contract) */
+  .tag {
+    display: inline-block;
+    margin-left: 0.5em;
+    padding: 0.1em 0.6em;
+    border-radius: 999px;
+    font-size: max(calc(11.25 * var(--fl)), 0.72em);
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    vertical-align: 0.15em;
+    background: var(--red-text); /* white on it: 5.6:1, where the gradient's red end gives 3.9:1 */
+    color: var(--white);
+  }
+
+  /* Quotes inside the market tiles */
+  .tiles .quote { font-style: italic; }
+  .tiles .quote cite { display: block; margin-top: 0.3em; font-style: normal; font-weight: 800; color: var(--emph-small); }
+  .tiles dt em { color: var(--emph-small); font-style: normal; }
+
+  /* Bottom line of a card */
+  .bar-note {
+    margin: calc(16 * var(--u)) 0 0;
+    padding: calc(10 * var(--u)) calc(16 * var(--u));
+    border-radius: 10px;
+    font-size: max(calc(13 * var(--fl)), calc(20 * var(--u)));
+    font-weight: 800;
+    text-align: center;
+    background: var(--dark);
+    color: var(--white);
+  }
+  .card-foot { margin: calc(10 * var(--u)) 0 0; font-size: max(calc(11 * var(--fl)), calc(16 * var(--u))); font-weight: 600; color: var(--ink-muted); }
+
+  /* Long tile lists: only the current tile keeps its description */
+  .tiles-compact.beats > :not(.is-now) dd { display: none; }
+
+  /* Stop 3: once the takeaways show, they take the place of the findings */
+  .card:has(.reveal.is-shown) .discovered { display: none; }
+  .card .reveal { transition: none; }
+
+  .card-long-title { width: calc(840 * var(--u)); }
+  .card-long-title h2 { font-size: max(calc(16 * var(--fl)), calc(32 * var(--u))); }
+  /* Phones: the long title stays small text there, so its red word takes the small red */
+  html.phone .card-long-title h2 em { color: var(--emph-small); }
+
+  /* Over to you: the questions, then how the room answers */
+  .ask-note { margin: calc(18 * var(--u)) 0 0; font-size: max(calc(13 * var(--fl)), calc(20 * var(--u))); font-weight: 600; color: var(--ink-muted); }
+
+  /* Workshop: big numbers */
+  .workshop b { display: block; font-size: 2.6em; line-height: 1; color: var(--emph); }
+
+  /* Next steps: four streams over three periods */
+  .card-plan { width: calc(1120 * var(--u)); }
+  .plan {
+    /* Darker than the muted ink: the columns not yet lit read over the rocket behind the glass */
+    --plan-muted: color-mix(in srgb, var(--ink-muted) 80%, var(--ink));
+    width: 100%;
+    margin-top: calc(18 * var(--u));
+    border-collapse: collapse;
+    font-size: max(calc(12 * var(--fl)), calc(18 * var(--u)));
+    line-height: 1.3;
+  }
+  .plan th, .plan td {
+    padding: calc(7 * var(--u)) calc(10 * var(--u));
+    border-top: 1px solid rgb(116 119 117 / 0.3);
+    text-align: left;
+    vertical-align: top;
+  }
+  .plan thead th {
+    border-top: none;
+    font-size: max(calc(11.25 * var(--fl)), 0.85em);
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--plan-muted);
+  }
+  .plan tbody th { width: 18%; font-weight: 800; color: var(--ink-strong); }
+  .plan td { font-weight: 600; color: var(--plan-muted); transition: color 400ms ease, background-color 400ms ease; }
+  .plan [data-beat].is-now { color: var(--ink-strong); font-weight: 800; }
+  .plan td.is-now { background: rgb(238 34 56 / 0.08); }
+  /* The lit period: strong ink over a red rule (red text that small falls under 4.5:1 on the dark panel) */
+  .plan thead [data-beat].is-now { color: var(--ink-strong); box-shadow: inset 0 -3px var(--emph); }
+  /* Phones: the plan shows the lit period only, its four streams as a list */
+  html.phone .plan.beats:has(.is-now) [data-beat]:not(.is-now) { display: none; }
+
+  /* What makes AI pay off: the capabilities side by side, one column each */
+  .card-full { width: calc(1500 * var(--u)); }
+  .themes {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: calc(12 * var(--u));
+    margin: calc(18 * var(--u)) 0 0;
+    font-size: max(calc(12 * var(--fl)), calc(19 * var(--u)));
+  }
+  .themes section { display: flex; flex-direction: column; gap: calc(8 * var(--u)); }
+  .themes h3 {
+    margin: 0;
+    padding: calc(12 * var(--u));
+    border-radius: 10px;
+    font-size: 1.05em;
+    font-weight: 800;
+    text-align: center;
+    background: var(--dark);
+    color: var(--white);
+  }
+  .themes p {
+    margin: 0;
+    padding: calc(10 * var(--u)) calc(12 * var(--u));
+    border-radius: 8px;
+    font-weight: 600;
+    line-height: 1.3;
+    background: var(--light-grey);
+    color: var(--dark);
+  }
+  /* The board waits for the rooms' turn to land before it covers the scene */
+  .card-full.is-on { transition-delay: 1700ms; }
+  html.phone .themes { gap: 4px; margin-top: 6px; font-size: 9px; }
+  html.phone .themes h3,
+  html.phone .themes p { padding: 4px 5px; }
+  html.phone .themes section { gap: 3px; }
+  html.phone .card-full .bar-note { margin-top: 6px; padding: 4px 8px; }
+  html.phone .card-full .card-foot { display: none; }
+
+  /* The capability's ID card (stop 11): phase, capability, objective */
+  .idcard {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1.2fr;
+    gap: calc(16 * var(--u));
+    margin: calc(16 * var(--u)) 0 0;
+    padding: calc(14 * var(--u)) calc(18 * var(--u));
+    border-radius: 12px;
+    background: var(--dark);
+    color: var(--white);
+  }
+  .idcard span { display: block; font-size: max(calc(11.25 * var(--fl)), calc(14 * var(--u))); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-on-dark); }
+  .idcard b { display: block; margin-top: 2px; font-size: max(calc(14 * var(--fl)), calc(26 * var(--u))); font-weight: 800; line-height: 1.15; }
+
+  /* Phones: the text keeps its floor, so the wide cards take more of the screen and the board nearly all of it;
+     tiles without beats turn to rows, each name running into its text (the workshop's figures keep their tiles) */
+  html.phone .card-wide { width: 42vw; }
+  html.phone .card-full { width: 88vw; }
+  html.phone .tiles-plain:not(.workshop) { grid-template-columns: 1fr; gap: 3px; }
+  html.phone .tiles-plain:not(.workshop) > * { padding: 3px 8px; }
+  html.phone .tiles-plain:not(.workshop) dt { display: inline; margin-right: 0.4em; }
+  html.phone .tiles-plain:not(.workshop) dd { display: inline; }
+
+  /* Phones: a long card keeps its heading and tiles, drops the paragraph and the pills */
+  html.phone .card-phone-short .card-desc,
+  html.phone .card-phone-short .pills { display: none; }
+
+  /* The roll-out app, in a browser window frame; a beat swaps one view for the next */
+  /* Dark glass in both themes: the app itself is dark (assets/flight-deck/) */
+  .app-shot {
+    position: relative;
+    margin: calc(18 * var(--u)) 0 0;
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #2a2142;
+    box-shadow: 0 0 0 1px rgb(30 26 50 / 0.4), 0 calc(14 * var(--u)) calc(44 * var(--u)) rgb(238 34 56 / 0.18), 0 calc(6 * var(--u)) calc(18 * var(--u)) rgb(20 14 40 / 0.4);
+  }
+  .app-shot > span {
+    display: block;
+    height: calc(26 * var(--u));
+    background:
+      radial-gradient(circle, var(--red) 45%, transparent 50%) calc(14 * var(--u)) 50% / calc(12 * var(--u)) calc(12 * var(--u)) no-repeat,
+      radial-gradient(circle, rgb(255 255 255 / 0.3) 45%, transparent 50%) calc(32 * var(--u)) 50% / calc(12 * var(--u)) calc(12 * var(--u)) no-repeat,
+      radial-gradient(circle, rgb(255 255 255 / 0.3) 45%, transparent 50%) calc(50 * var(--u)) 50% / calc(12 * var(--u)) calc(12 * var(--u)) no-repeat,
+      #221a36;
+  }
+  .app-shot img { display: block; width: 100%; height: auto; }
+  .app-shot img + img { position: absolute; left: 0; top: calc(26 * var(--u)); opacity: 0; transition: opacity 400ms ease; }
+  .app-shot img + img.is-now { opacity: 1; }
+  /* Phones: the screenshot shows its top (the card cannot grow there) */
+  html.phone .app-shot img { max-height: 22vh; object-fit: cover; object-position: top; }
+
+  /* Tiles all lit at once (the closing reminder of the four pillars) */
+  .tiles-lit > * { border-color: var(--tile-on-border); background: var(--tile-on-bg); color: var(--tile-on-fg); }
+  .tiles-lit > * dd { color: var(--tile-on-muted); }
+  .tiles-lit > *::before { background: var(--tile-on-badge-bg); color: var(--tile-on-badge-fg); box-shadow: none; }
+
+  /* Closing stop: the line, then the four pillars */
+  .card-closing { width: calc(860 * var(--u)); }
+  .card-closing h1 { font-size: max(calc(40 * var(--fl)), calc(120 * var(--u))); line-height: 1.02; }
+  .card-closing .tiles { margin-top: calc(28 * var(--u)); }
+
+}
+
+@layer components {
+  /* The footer crosses the sets' drawings (the cockpit, the mission room, the rocket's exhaust): its source and
+     version sit on the leader boxes' plate */
+  .hud-source:not(:empty),
+  .hud-version:not(:empty) {
+    padding: 0 0.4em;
+    border-radius: 4px;
+    background: var(--lead-box);
+  }
+}
+
+@layer deck {
+  /* The deck opens dark, on a lighter dusk than the keynote's: raspberry to indigo, like the light backdrop's
+     pink to blue. The engine's blueprint parts sit a step above it (framework/render/lineart.js reads --art-dark-*) */
+  :root {
+    --grad-dark: linear-gradient(135deg, #4a2238 0%, #1f2650 100%);
+    --art-dark-lo: #33264a;
+    --art-dark-hi: #46345e;
+    --art-dark-line: #f2eef8;
+    --art-dark-soft-lo: #5a2844;
+    --art-dark-soft-hi: #6e3256;
+  }
+  /* The deck layer comes after framework/css/dark.css. On these panels #ff6b7a gives 4.2:1 for small text: the
+     lighter tint keeps every emphasised word and small label at 4.5:1 or more */
+  body[data-theme="dark"] {
+    --dark-panel: rgb(48 34 66 / 0.86);
+    --accent-on-dark: #ff8a96;
+    --emph: var(--accent-on-dark);
+    --emph-small: var(--accent-on-dark);
+  }
+}
+
+@layer themes {
+  body[data-theme="dark"] .pills li { color: var(--white); background: rgb(255 107 122 / 0.14); }
+  body[data-theme="dark"] .bar-note,
+  body[data-theme="dark"] .themes h3,
+  body[data-theme="dark"] .idcard { background: rgb(255 255 255 / 0.08); border: 1px solid rgb(255 255 255 / 0.16); }
+  body[data-theme="dark"] .themes p { background: rgb(255 255 255 / 0.05); border: 1px solid rgb(255 255 255 / 0.1); color: var(--dark-ink); }
+  body[data-theme="dark"] .plan td.is-now { background: rgb(255 107 122 / 0.12); }
+  /* The plan's muted cells keep 4.5:1 over the rocket's lines: a denser panel, a lighter muted ink */
+  body[data-theme="dark"] .card-plan { background: rgb(48 34 66 / 0.94); }
+  body[data-theme="dark"] .plan :is(td, thead th):not(.is-now) { color: #cfcbd6; }
+  body[data-theme="dark"] .idcard span { color: #ffadb5; }
+  body[data-theme="dark"] .card-closing .tiles > * { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+}
+
+/* The reading version (no scripts, no WebGL) keeps the light backdrop element: on this dark-first deck it wears
+   the Dusk gradient, so the dark cards and the white title sit on dark */
+@layer fallback {
+  html.no-js body[data-theme="dark"] .backdrop-light { background: var(--grad-dark); }
+  html.no-js body[data-theme="dark"] .nojs-banner p,
+  html.no-js body[data-theme="dark"] .nojs-footer { color: var(--footer-on-dark); }
+
+  /* Paper drops backgrounds: the dark blocks and the tags print as outlined ink */
+  @media print {
+    html.no-js :is(.bar-note, .themes h3, .idcard, .tag) {
+      background: none;
+      color: var(--dark);
+      box-shadow: inset 0 0 0 1.5px currentColor;
+    }
+    html.no-js .idcard span { color: var(--red-text); }
+  }
+}

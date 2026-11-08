@@ -1,0 +1,1 @@
+../../framework/agents/stop-author.md

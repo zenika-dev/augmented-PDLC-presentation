@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+
+# Browser checks, stop maps, board files
+/qa/
+.deck/
+
+# Client material: never commit
+editions/
+sources/
+
+# The framework's starter builds into its own folder
+framework/starter/dist/
+framework/starter/qa/
+framework/starter/.deck/

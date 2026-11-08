@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Deck Starter</title>
+  <!-- Scripts on: the 3D deck. Scripts off (mail previewers): the cards as a page.
+       html.phone: a phone (coarse pointer, 600px or less one way), set before first paint and kept up as it turns -->
+  <script>(function (h, m) { h.className = "js"; var s = function () { h.classList.toggle("phone", m.matches); }; s(); m.addEventListener("change", s); })(document.documentElement, matchMedia("(pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px)"));</script>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/hud.css">
+  <link rel="stylesheet" href="../css/dark.css">
+  <link rel="stylesheet" href="../css/fallback.css">
+</head>
+<body data-theme="light">
+
+<header class="nojs-banner">
+  <p>This is the reading version. Open this file in Chrome or Safari for the animated deck.</p>
+</header>
+
+<div class="backdrop backdrop-light"></div>
+<div class="backdrop backdrop-dark"></div>
+<div class="backdrop backdrop-core"></div>
+<div class="backdrop backdrop-blueprint"></div>
+
+<div id="stage"></div>
+<div id="cards"></div>
+
+<!-- Stops: framework/docs/contract.md lists the core's attributes, docs/attributes.md this scene's (data-lift). -->
+<div id="stops">
+
+  <section id="machine" class="stop" data-section="intro" data-shot="hero" data-crumb="The machine" data-labels="parts" data-answers="what"
+           data-anchor="screen" data-side="left">
+    <div class="card">
+      <p class="card-num">01</p>
+      <h2>One Machine, Two <em>Parts</em></h2>
+      <p class="card-desc">A base plate holds a core. Every step of a deck is a camera shot on one scene like this one, plus the state of its parts.</p>
+    </div>
+  </section>
+
+  <section id="core" class="stop" data-section="intro" data-shot="close" data-lift="1" data-crumb="The core" data-labels="core"
+           data-focus="core" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-energize="core" data-answers="what"></div>
+    <div class="card">
+      <p class="card-num">02</p>
+      <h2>The Core <em>Lifts</em> Out</h2>
+      <p class="card-desc">A stop sets the scene's state: here the core rises out of the plate. The second beat lights it in the energy colour.</p>
+    </div>
+  </section>
+
+  <section id="bench" class="stop" data-section="bench" data-set="bench" data-shot="bench" data-crumb="The test bench" data-labels="bench,notes"
+           data-answers="test" data-anchor="screen" data-side="left">
+    <div class="card">
+      <p class="card-num">03</p>
+      <h2>A Set of Its <em>Own</em></h2>
+      <p class="card-desc">A set is a place of its own. Moving to it is a cut, unless a portal or a turntable joins the two places.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="hud">
+  <button class="hud-theme" type="button" aria-label="Dark theme" aria-pressed="false"></button>
+  <button class="hud-fullscreen" type="button" aria-label="Full screen" aria-pressed="false"></button>
+  <nav class="hud-nav" aria-label="Where we are">
+    <div class="hud-crumb"><span class="crumb-act"></span><span class="crumb-part"></span></div>
+    <ol class="hud-acts" aria-hidden="true"></ol>
+    <ul class="hud-checklist" aria-label="Questions answered so far"></ul>
+  </nav>
+  <div class="hud-footer">
+    <span class="hud-source"></span>
+    <span class="hud-meta"><span class="hud-version" aria-hidden="true"></span><span class="hud-counter"></span></span>
+  </div>
+</div>
+
+<footer class="nojs-footer">© ZENIKA 2026 · All Rights Reserved</footer>
+
+<div class="rotate">
+  <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="20" y="6" width="24" height="52" rx="5"/><line x1="29" y1="51" x2="35" y2="51"/></svg>
+  <p>Rotate for the full immersive experience</p>
+</div>
+
+<script src="dist/deck.js"></script>
+</body>
+</html>

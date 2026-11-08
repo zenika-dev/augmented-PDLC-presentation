@@ -1,0 +1,21 @@
+{
+  "name": "deck-starter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The smallest deck on the framework: copy it to start a new one",
+  "scripts": {
+    "build": "node ../build/build.mjs",
+    "dev": "node ../build/build.mjs --watch --serve",
+    "check:copy": "node ../build/check-copy.mjs",
+    "check:private": "node ../build/check-private.mjs",
+    "check:docs": "node ../build/check-docs.mjs",
+    "docs": "node ../build/check-docs.mjs --write",
+    "qa": "node ../qa/qa.mjs",
+    "gate": "node ../build/gate.mjs",
+    "outline": "node ../build/outline.mjs",
+    "stops:draft": "node ../build/draft-stops.mjs",
+    "boards": "node ../boards/boards.mjs",
+    "new-deck": "node ../build/new-deck.mjs"
+  }
+}

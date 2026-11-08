@@ -1,0 +1,20 @@
+{
+  "name": "augmented-pdlc",
+  "private": true,
+  "version": "0.3.0",
+  "description": "The augmented PDLC: Zenika's point of view on AI across the Product Delivery Life Cycle, an executive keynote",
+  "type": "module",
+  "scripts": {
+    "build": "node ../../framework/build/build.mjs",
+    "dev": "node ../../framework/build/build.mjs --watch --serve",
+    "check:private": "node ../../framework/build/check-private.mjs",
+    "qa": "node ../../framework/qa/qa.mjs",
+    "check:copy": "node ../../framework/build/check-copy.mjs",
+    "check:docs": "node ../../framework/build/check-docs.mjs",
+    "docs": "node ../../framework/build/check-docs.mjs --write",
+    "gate": "node ../../framework/build/gate.mjs",
+    "outline": "node ../../framework/build/outline.mjs",
+    "stops:draft": "node ../../framework/build/draft-stops.mjs",
+    "boards": "node ../../framework/boards/boards.mjs"
+  }
+}

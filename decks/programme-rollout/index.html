@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2e2a55">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Launch the AI Native Factory</title>
+  <!-- Scripts on: the 3D deck. Scripts off (mail previewers): css/fallback.css lays the cards out as a page.
+       html.phone: a phone (coarse pointer, 600px or less one way), set before first paint and kept up as it turns -->
+  <script>(function (h, m) { h.className = "js"; var s = function () { h.classList.toggle("phone", m.matches); }; s(); m.addEventListener("change", s); })(document.documentElement, matchMedia("(pointer: coarse) and (max-height: 600px), (pointer: coarse) and (max-width: 600px)"));</script>
+  <meta name="description" content="Zenika point of view on building an AI Native Factory: a programme in three phases and four pillars, from pilot to scale.">
+  <link rel="stylesheet" href="../../brand/zenika/fonts.css">
+  <link rel="stylesheet" href="../../framework/css/tokens.css">
+  <link rel="stylesheet" href="../../framework/css/components.css">
+  <link rel="stylesheet" href="../augmented-pdlc/css/deck.css">
+  <link rel="stylesheet" href="../../framework/css/hud.css">
+  <link rel="stylesheet" href="css/deck.css">
+  <link rel="stylesheet" href="../../framework/css/dark.css">
+  <link rel="stylesheet" href="../../framework/css/fallback.css">
+</head>
+<body data-theme="dark" data-theme-default="dark">
+
+<header class="nojs-banner">
+  <img src="../../brand/zenika/zenika-monogram.png" alt="Zenika">
+  <p>This is the reading version. Open this file in Chrome or Safari, on a computer or a phone, for the animated deck.</p>
+</header>
+
+<div class="backdrop backdrop-light"></div>
+<div class="backdrop backdrop-dark"></div>
+<div class="backdrop backdrop-core"></div>
+<div class="backdrop backdrop-blueprint"></div>
+
+<div id="stage"></div>
+<div id="cards"></div>
+
+<!--
+  Same attributes as the keynote: the core's in framework/docs/contract.md, the engine's and the sets' in
+  ../augmented-pdlc/docs/attributes.md (generated). The sets (../augmented-pdlc/src/engine/sets.js), in short:
+  Set:      data-set = rocket (default) | cockpit | classroom | mission | contract. Another set is a cut, not a flight.
+            Rocket set: data-parts adds rocket, pad, moon to wheel, nexus, bands; data-separate 0–1 (the booster drops away),
+            data-open 0–1 (the middle stage's halves slide apart); on the engine: cartridges (capabilities in every
+            lobe), cartridge (one pulled out of Develop), bay (the model bay by the gateway, data-select 0–1).
+            Contract set: data-rings (which rings show: score, rule, ceiling), data-score, data-rule, data-ceiling (0–100;
+            a limit not yet set stands at 100). Beats may override them all. The dial's zones are "zones" in src/lists.js.
+            The rocket and the cockpit are joined by a portal: the camera dives through the nose window. The classroom
+            and mission control stand back to back: moving between them turns the scene round (deck.config.mjs sets).
+  HUD:      deck.config.mjs turns the questions off (the seven AI capabilities have their own stop), so the stops carry no data-answers.
+  Shots:    pad | rocket-flight | rocket-hero | rocket-nose | rocket-open | rocket-moon | cockpit | cockpit-panel | classroom
+            | mission | mission-wall | contract, besides the engine's own
+  Labels:   leader names on the sets come from "leads" in src/lists.js; groups: stages, energy, target, pillars, instruments, cabin,
+            tiers, screens, zones, or a lead's own key; "notes" shows their notes
+-->
+
+<div id="stops">
+
+  <!-- 1 · Title -->
+  <section id="title" class="stop" data-set="rocket" data-parts="rocket,pad,moon" data-section="programme" data-shot="pad" data-idle
+           data-hud="bare" data-anchor="screen" data-side="left">
+    <div class="card card-hero">
+      <h1>Launch the AI Native <em>Factory</em></h1>
+      <p class="sub">From pilot to scale, one programme for every product team</p>
+      <p class="card-text">Zenika · 2026</p>
+    </div>
+  </section>
+
+  <!-- 2 · Goals -->
+  <section id="goals" class="stop" data-set="rocket" data-parts="rocket,moon" data-section="programme" data-shot="rocket-flight"
+           data-crumb="Goals" data-source="Phase durations: Zenika estimate" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-separate="1" data-focus="stage:1" data-context="rocket" data-labels="stage:1,notes" data-crumb="Phase 1"></div>
+    <div class="beat" data-separate="1" data-focus="stage:2,energy-line" data-context="rocket" data-labels="stage:2,notes" data-crumb="Phase 2"></div>
+    <div class="beat" data-separate="1" data-focus="stage:3" data-context="rocket" data-labels="stage:3,notes" data-crumb="Phase 3"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Goals of the transformation</p>
+      <h2>An AI-Native PDLC That Scales Value, Quality and Decisions <em>Together</em></h2>
+      <p class="card-desc">At the end of the programme, <em>every product team</em> works with AI as a native co-pilot. Work flows <em>without breaks</em> through every stage of the <em>PDLC</em>, and the whole organisation delivers faster.</p>
+      <dl class="tiles beats">
+        <div data-beat="1"><dt>Phase 1 · Assessment &amp; Target</dt><dd>About two months: the baseline, where each team stands on the seven capabilities, a target set with the teams.</dd></div>
+        <div data-beat="2"><dt>Phase 2 · Pilot</dt><dd>About two quarters: a few teams run the new PDLC end to end.</dd></div>
+        <div data-beat="3"><dt>Phase 3 · Scale</dt><dd>The year after: every team, on a platform that has proven itself.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 3 · Phase 1 leads to a target set with the teams -->
+  <section id="findings" class="stop" data-set="rocket" data-parts="rocket,moon" data-section="programme" data-shot="rocket-hero" data-lead-side="left"
+           data-labels="pins,moon" data-crumb="A target set with the teams" data-anchor="screen" data-side="right">
+    <div class="beat"></div>
+    <div class="beat" data-focus="moon,energy-line,stage:2" data-context="rocket" data-energize="energy-line" data-labels="pins,pin:1" data-crumb="The augmented PDLC"></div>
+    <div class="beat" data-focus="moon,stage:3" data-context="rocket" data-labels="pins,pin:2" data-crumb="New roles" data-energize=""></div>
+    <div class="beat" data-focus="moon,stage:2,stage:1" data-context="rocket" data-labels="pins,pin:3" data-crumb="One platform"></div>
+    <div class="beat" data-focus="moon,cone,stage:3" data-context="rocket" data-labels="pins,pin:4" data-crumb="Value"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Phase 1 leads to a target</p>
+      <h2>A Target Set With the <em>Teams</em></h2>
+      <div class="discovered">
+        <p class="card-kicker">What an assessment usually finds</p>
+        <dl class="tiles tiles-plain">
+          <div><dt>Each team picked <em>its own tools</em>, and <em>no one</em> can say what they return</dt></div>
+          <div><dt>Specs, reviews and tests <em>live apart</em>, so AI speeds up one step and <em>jams the next</em></dt></div>
+          <div><dt>Agents get <em>access</em> before anyone decides <em>what they may do</em></dt></div>
+        </dl>
+      </div>
+      <div class="reveal" data-from="1"><div>
+        <p class="card-kicker">What the target says</p>
+        <dl class="tiles beats">
+          <div data-beat="1"><dt>The augmented PDLC becomes the delivery model</dt><dd>The wheel and its six gates, with the Spec as the hand-off from one phase to the next.</dd></div>
+          <div data-beat="2"><dt>Roles take on new duties</dt><dd>Spec, context and decision roles, held by the existing teams: hats, not hires.</dd></div>
+          <div data-beat="3"><dt>One platform carries every team</dt><dd>Model access, identity and guardrails, in the layers under the wheel.</dd></div>
+          <div data-beat="4"><dt>Value is measured against a baseline</dt><dd>Throughput, stability, quality and value, read team by team before and after the start.</dd></div>
+        </dl>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 4 · The market -->
+  <section id="market" class="stop" data-set="rocket" data-parts="rocket,moon" data-section="programme" data-shot="rocket-nose"
+           data-crumb="What we see in the market" data-source="Faros AI 2026 · McKinsey 2025 · DORA 2025" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-crumb="Adoption at scale"></div>
+    <div class="beat" data-crumb="Local productivity gains"></div>
+    <div class="beat" data-crumb="Measuring the value"></div>
+    <div class="card card-wide card-compact-title card-long-title">
+      <p class="card-num">What we see in the market</p>
+      <h2>The Challenge Is Not to Code Faster With AI, but to Change for Good How We Design, Build and Deliver <em>Value</em></h2>
+      <dl class="tiles beats">
+        <div data-beat="1"><dt>Adoption at scale is slow to come</dt><dd class="quote">Speed and output gains upstream can come with more bugs, incidents and review time downstream. Optimizing one step can thus shift constraints to the next one.<cite>Faros AI, 2026</cite></dd></div>
+        <div data-beat="2"><dt>Local productivity gains do not add up to better end-to-end performance</dt><dd class="quote">A majority of organizations still struggle to demonstrate significant value at scale […].<cite>McKinsey, 2025</cite></dd></div>
+        <div data-beat="3"><dt>The value created stays hard to measure and to realise</dt><dd class="quote">AI acts as an amplifier of existing organizational strengths and weaknesses. Its value therefore depends as much on the operating model as on the technology itself.<cite>DORA, 2025</cite></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 5 · Four pillars -->
+  <section id="pillars" class="stop" data-set="rocket" data-parts="rocket,wheel,nexus,bands" data-open="1" data-section="programme" data-shot="rocket-open"
+           data-labels="pillars" data-crumb="Four complementary pillars" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-focus="wheel,nexus" data-context="rocket" data-labels="pillar:pdlc" data-crumb="PDLC"></div>
+    <div class="beat" data-focus="bands" data-context="rocket" data-labels="pillar:platform" data-crumb="Platform"></div>
+    <div class="beat" data-focus="stage:3" data-context="rocket" data-labels="pillar:measure" data-crumb="Measure"></div>
+    <div class="beat" data-focus="hatch" data-context="rocket" data-labels="pillar:people" data-crumb="People"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Four complementary pillars</p>
+      <h2>One Programme to Transform the Whole <em>PDLC</em></h2>
+      <dl class="tiles tiles-2 beats">
+        <div data-beat="1"><dt>PDLC</dt><dd>Every product team runs the augmented PDLC: the wheel, its gates and the shared context.</dd></div>
+        <div data-beat="2"><dt>Platform</dt><dd>The layers under the wheel: models, tools, identity and guardrails, run as one platform.</dd></div>
+        <div data-beat="3"><dt>Measure</dt><dd>Quality, flow and value, measured against a baseline taken before the start.</dd></div>
+        <div data-beat="4"><dt>People</dt><dd>Roles, skills and training, so each person knows what they own.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 6 · Over to you #1 -->
+  <section id="ask-1" class="stop" data-set="rocket" data-parts="rocket,pad,moon" data-section="programme" data-shot="pad" data-idle
+           data-crumb="Over to you" data-anchor="screen" data-side="left">
+    <div class="card card-wide">
+      <p class="card-num">Over to you</p>
+      <h2>Risks and <em>Opportunities</em></h2>
+      <dl class="tiles tiles-plain">
+        <div><dt>What risks and dangers come with this programme?</dt></div>
+        <div><dt>What opportunities make now the right time to launch it?</dt></div>
+      </dl>
+      <p class="ask-note">Your answers feed the programme's risk register and the case for starting now.</p>
+    </div>
+  </section>
+
+  <!-- 7 · Measure -->
+  <section id="measure" class="stop" data-set="cockpit" data-parts="none" data-section="measure" data-shot="cockpit"
+           data-crumb="How do we steer the programme?" data-source="DORA 2025 (Stability, Throughput)" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-shot="cockpit-panel" data-focus="inst:stability,inst:throughput" data-context="cockpit" data-energize="inst:stability" data-labels="inst:stability" data-crumb="Stability"></div>
+    <div class="beat" data-shot="cockpit-panel" data-focus="inst:throughput" data-context="cockpit" data-labels="inst:throughput" data-crumb="Throughput" data-energize=""></div>
+    <div class="beat" data-shot="cockpit-panel" data-focus="inst:cost" data-context="cockpit" data-labels="inst:cost" data-crumb="Quality"></div>
+    <div class="beat" data-shot="cockpit-panel" data-focus="inst:experience" data-context="cockpit" data-labels="inst:experience" data-crumb="Transformation"></div>
+    <div class="beat" data-shot="cockpit-panel" data-focus="inst:productivity" data-context="cockpit" data-labels="inst:productivity" data-crumb="Value"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on measure</p>
+      <h2>How Do We Steer the <em>Programme</em>?</h2>
+      <dl class="tiles beats">
+        <div data-beat="1"><dt>Stability (DORA)</dt><dd>Change failure rate · Rework rate</dd></div>
+        <div data-beat="2"><dt>Throughput (DORA)</dt><dd>Lead time · Deployment frequency · Recovery time after a failed deployment</dd></div>
+        <div data-beat="3"><dt>Quality</dt><dd>Gate pass rate · Vulnerabilities introduced</dd></div>
+        <div data-beat="4"><dt>Transformation</dt><dd>Share of workflows run with AI · Reusable assets in use · Teams on board</dd></div>
+        <div data-beat="5"><dt>Value</dt><dd>Capacity moved to high-value work</dd></div>
+      </dl>
+      <p class="bar-note">Freeze a baseline first; expect a dip before the gain.</p>
+    </div>
+  </section>
+
+  <!-- 8 · Focus on the PDLC -->
+  <section id="pdlc" class="stop" data-set="rocket" data-parts="rocket,wheel,nexus,bands,cartridges" data-open="1" data-section="pdlc" data-shot="rocket-open"
+           data-crumb="An end-to-end transformation" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-shot="hero-right" data-focus="idea" data-context="wheel,nexus,bands" data-energize="idea" data-labels="shapes" data-crumb="The Spec"></div>
+    <div class="beat" data-shot="top-right" data-focus="capabilities" data-context="wheel,nexus,bands" data-energize="capabilities" data-labels="phases,capabilities" data-crumb="Capabilities"></div>
+    <div class="beat" data-shot="hero-right" data-focus="gates,idea" data-context="wheel,nexus,bands" data-energize="gates" data-labels="gate-names" data-lead-at="G5=0.72/0.27" data-lead-at-phone="G5=0.72/0.27" data-crumb="Quality Gates"></div>
+    <div class="beat" data-shot="hero-right" data-focus="nexus" data-context="wheel,bands,capabilities" data-energize="nexus" data-labels="levels" data-crumb="Context" data-lead-at="" data-lead-at-phone=""></div>
+    <div class="beat" data-shot="hero-right" data-focus="register:contracts" data-context="nexus,wheel,bands" data-energize="register:contracts" data-labels="register:contracts" data-crumb="A level of delegation"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on the PDLC</p>
+      <h2>An End-to-End <em>Transformation</em></h2>
+      <dl class="tiles tiles-compact beats">
+        <div data-beat="1"><dt>The Spec: a way to structure intent</dt><dd>The PDLC moves to Spec-Driven Development: a specification at every stage of the cycle structures human intent, from business intent to operations reports.</dd></div>
+        <div data-beat="2"><dt>Capabilities: what people do on the Spec</dt><dd>We list every action your people perform, then study how it changes the Specs and how AI augments it.</dd></div>
+        <div data-beat="3"><dt>Quality Gates <span class="tag">The PDLC harness</span></dt><dd>The Definitions of Ready and Done become explicit and live in the workflow, so the Specs between phases meet set quality criteria.</dd></div>
+        <div data-beat="4"><dt>Context</dt><dd>Teams structure the documentation at company, business unit and team level, so humans and agents share the same knowledge.</dd></div>
+        <div data-beat="5"><dt>A level of delegation <span class="tag">The contract</span></dt><dd>Criteria specific to each task decide how much of it the machine may take.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 9 · Spec-Driven Development -->
+  <section id="sdd" class="stop" data-set="rocket" data-parts="wheel,nexus,cartridges" data-section="pdlc" data-shot="top-right" data-labels="phases" data-idea="run"
+           data-crumb="Spec-Driven Development" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-shot="telescope-right" data-telescope="1" data-focus="nexus" data-context="wheel,capabilities" data-energize="nexus" data-labels="levels" data-lead-side="right" data-lead-column="0.86" data-crumb="A shared context"></div>
+    <div class="card card-wide card-compact-title card-phone-short">
+      <p class="card-num">Focus on the PDLC</p>
+      <h2>Spec-Driven Development and What It Does to <em>Context</em></h2>
+      <p class="card-desc">A <em>Spec-Driven Development</em> framework moves AI from generating code to working inside a <em>maintained context</em>, guided by explicit, verifiable specifications.</p>
+      <dl class="tiles tiles-2 tiles-plain">
+        <div><dt>A shared context</dt><dd>One place to gather and share what the organisation knows.</dd></div>
+        <div><dt>Specs as witnesses</dt><dd>They turn business, technical and functional intent into increments an agent can take in and a human can check.</dd></div>
+        <div><dt>The system keeps learning</dt><dd>Documentation is never frozen: it grows with every delivery.</dd></div>
+        <div><dt>Humans provide the intent</dt><dd>Agents observe, check and produce, but never decide.</dd></div>
+      </dl>
+      <ul class="pills"><li>Every Spec has an owner and a lifecycle</li><li>Contracts automate the workflow</li></ul>
+    </div>
+  </section>
+
+  <!-- 10 · Quality gates -->
+  <section id="gates" class="stop" data-set="rocket" data-parts="wheel,cartridges" data-section="pdlc" data-shot="top-right" data-labels="phases,gate-names,gate-notes" data-idea="run"
+           data-focus="gates,idea" data-context="wheel,capabilities" data-crumb="Quality Gates" data-anchor="screen" data-side="left" data-dock="bottom"
+           data-lead-at="G4=0.44/0.4, G5=0.5/0.07, G6=0.79/0.2, G3=0.63/0.88" data-lead-at-phone="G5=0.52/0.09, G4=0.37/0.31, G6=0.68/0.12, G1=0.79/0.33, G3=0.79/0.64, G2=0.79/0.8">
+    <div class="card">
+      <p class="card-num">The PDLC harness</p>
+      <h2>Quality <em>Gates</em></h2>
+      <p class="card-desc">The Definitions of Ready and Done become explicit and live in the workflow, so the Specs between phases meet set quality criteria.</p>
+    </div>
+  </section>
+
+  <!-- 11 · A capability -->
+  <section id="capability" class="stop" data-set="rocket" data-parts="wheel,cartridges,cartridge" data-section="pdlc" data-shot="capability"
+           data-focus="cartridge,phase:develop" data-context="wheel,capabilities" data-crumb="The capability model" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-focus="cartridge" data-context="wheel" data-labels="cart:label" data-crumb="Description"></div>
+    <div class="beat" data-focus="cartridge" data-context="wheel" data-energize="cart:tools" data-labels="cart:tools" data-crumb="Tooling"></div>
+    <div class="beat" data-focus="cartridge" data-context="wheel" data-labels="cart:plug" data-crumb="Platform" data-energize=""></div>
+    <div class="beat" data-focus="cartridge" data-context="wheel" data-labels="cart:clamp" data-crumb="Guardrails"></div>
+    <div class="beat" data-focus="cartridge" data-context="wheel" data-energize="cart:dial" data-labels="cart:dial" data-crumb="Autonomy scoring"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on the PDLC</p>
+      <h2>One Capability, in <em>Detail</em></h2>
+      <div class="idcard">
+        <div><span>Phase</span><b>Develop</b></div>
+        <div><span>Capability</span><b>Code assistant</b></div>
+        <div><span>Objective</span><b>Productivity gain</b></div>
+      </div>
+      <dl class="tiles tiles-compact beats">
+        <div data-beat="1"><dt>Description</dt><dd>Developers turn a Design Spec into working code.</dd></div>
+        <div data-beat="2"><dt>Tooling</dt><dd>An AI coding assistant, in the IDE and in the code forge.</dd></div>
+        <div data-beat="3"><dt>Platform</dt><dd>The AI gateway for model access · the Context Nexus for context.</dd></div>
+        <div data-beat="4"><dt>Guardrails</dt><dd>Human review, a mandatory merge request and the full CI. The same test requirements as code a human writes.</dd></div>
+        <div data-beat="5"><dt>Autonomy scoring</dt><dd>The criteria the contract reads, and the links to other capabilities: unit test coverage, Design Spec quality, the business domain's criticality, open static-analysis issues on that domain.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 12 · The contract -->
+  <section id="contract" class="stop" data-set="contract" data-parts="none" data-section="pdlc" data-shot="contract"
+           data-crumb="The contract" data-anchor="screen" data-side="left">
+    <div class="beat" data-labels="zones"></div>
+    <div class="beat" data-rings="score" data-score="86" data-focus="ring:score,needle,zone:autonomous" data-context="autonomy" data-energize="ring:score" data-labels="ring:score,zone:autonomous,notes" data-crumb="The score"></div>
+    <div class="beat" data-rings="score,rule" data-score="86" data-rule="79" data-focus="ring:rule,ring:score,needle" data-context="autonomy" data-labels="ring:rule,needle,notes" data-crumb="Blocking rule" data-energize=""></div>
+    <div class="beat" data-rings="score,rule,ceiling" data-score="86" data-rule="79" data-ceiling="65" data-focus="ring:ceiling,ceiling,ring:rule,ring:score,needle" data-context="autonomy" data-energize="ceiling" data-labels="ring:ceiling,ceiling,notes" data-crumb="Foundation ceiling"></div>
+    <div class="beat" data-rings="score,rule,ceiling" data-score="86" data-rule="79" data-ceiling="65" data-focus="zone:executed,needle,ceiling,ring:score,ring:rule,ring:ceiling" data-context="autonomy" data-energize="zone:executed" data-labels="zone:executed" data-crumb="Human in the loop"></div>
+    <div class="beat" data-rings="score,rule,ceiling" data-score="86" data-rule="100" data-ceiling="92" data-focus="zone:autonomous,needle,ceiling,ring:score,ring:ceiling" data-context="autonomy" data-energize="zone:autonomous" data-labels="zone:autonomous,needle" data-crumb="Human on the loop"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">The contract</p>
+      <h2>A Level of <em>Delegation</em></h2>
+      <p class="card-desc">Criteria specific to each task decide how much of it the machine may take. Example: the code assistant capability, with illustrative scores.</p>
+      <dl class="tiles tiles-compact beats">
+        <div data-beat="1"><dt>The score · 86</dt><dd>An agent scores the task out of 100: unit test coverage 24/30, complexity 22/25, domain criticality 25/25, static-analysis issues 15/20. At 86 the task could run AI-autonomous.</dd></div>
+        <div data-beat="2"><dt>Blocking rule · 79 at most</dt><dd>Generated code always goes through a merge request and the CI. That caps the level at the top of AI-executed.</dd></div>
+        <div data-beat="3"><dt>Foundation ceiling · 65</dt><dd>The maturity of each foundation sets a ceiling on every capability. Here the foundations hold it at 65: the most restrictive limit wins.</dd></div>
+        <div data-beat="4"><dt>Result · AI-executed, human in the loop</dt><dd>The agent does the work; a human checks each result before it applies. This is where a pilot starts.</dd></div>
+        <div data-beat="5"><dt>Next level · human on the loop</dt><dd>Once the foundations mature and automated gates with sampled reviews replace the per-change rule, the task reaches AI-autonomous. The human sets the contract, watches the dials and steps in on exceptions.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 13 · Workshop -->
+  <section id="workshop" class="stop" data-set="rocket" data-parts="wheel,cartridges" data-section="pdlc" data-shot="top-right" data-labels="phases"
+           data-crumb="Workshop" data-anchor="screen" data-side="left">
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Workshop</p>
+      <h2>What Are the Capabilities of Each Product Team, and What Gain Can We Expect From <em>AI</em>?</h2>
+      <dl class="tiles tiles-3 tiles-plain workshop">
+        <div><dt><b>6</b> groups</dt><dd>One group for each phase of the PDLC.</dd></div>
+        <div><dt><b>10</b> minutes</dt><dd>Each group lists the capabilities of its phase.</dd></div>
+        <div><dt><b>2</b> minutes</dt><dd>Each group presents its three best capabilities.</dd></div>
+      </dl>
+      <p class="bar-note">The answers feed the capability catalogue the pilot starts from.</p>
+    </div>
+  </section>
+
+  <!-- 14 · The platform -->
+  <section id="platform" class="stop" data-set="rocket" data-parts="wheel,nexus,bands" data-explode="1" data-section="platform" data-shot="side" data-labels="bands"
+           data-crumb="How do we support the transformation?" data-anchor="band:contextualise" data-side="right">
+    <div class="beat"></div>
+    <div class="beat" data-focus="band:discover" data-context="bands" data-energize="band:discover" data-labels="bands" data-crumb="Discover"></div>
+    <div class="beat" data-focus="band:build" data-context="bands" data-energize="band:build" data-labels="bands" data-crumb="Build"></div>
+    <div class="beat" data-focus="band:contextualise,nexus" data-context="bands" data-energize="band:contextualise" data-labels="bands" data-crumb="Contextualise"></div>
+    <div class="beat" data-focus="band:measure" data-context="bands" data-energize="band:measure" data-labels="bands" data-crumb="Measure"></div>
+    <div class="beat" data-focus="band:platform" data-context="bands" data-energize="band:platform" data-labels="bands" data-crumb="Platform"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on the platform</p>
+      <h2>How Do We Support the <em>Transformation</em>?</h2>
+      <dl class="tiles beats">
+        <div data-beat="1"><dt>Discover</dt><dd>L0 Idea &amp; Discovery Tooling · L12 App Portfolio &amp; Capability Discovery</dd></div>
+        <div data-beat="2"><dt>Build</dt><dd>L1 AI Coding Assistants · L2 SDD Tooling</dd></div>
+        <div data-beat="3"><dt>Contextualise</dt><dd>L4 Agent &amp; MCP Registry · L5 Context Factory · L6 Multi-agent Orchestration</dd></div>
+        <div data-beat="4"><dt>Measure</dt><dd>L8 CI/CD &amp; Quality · L9 Observability &amp; DORA</dd></div>
+        <div data-beat="5"><dt>Platform</dt><dd>L3 AI Gateway · L7 Prompt Versioning &amp; FinOps · L10 Infrastructure &amp; Sovereignty · L11 Identity &amp; Non-Human Access</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 15 · Model selection -->
+  <section id="models" class="stop" data-set="rocket" data-parts="wheel,nexus,bands,bay" data-explode="1" data-section="platform" data-shot="model-bay"
+           data-crumb="The best model at the right time" data-anchor="screen" data-side="left">
+    <div class="beat" data-select="0" data-focus="bay,layer:L3" data-context="bands,nexus" data-labels="bay:manual,notes" data-crumb="First iterations"></div>
+    <div class="beat" data-select="1" data-focus="bay,layer:L3,nexus" data-context="bands" data-energize="selector,indicator" data-pulse="nexus,layer:L3"
+         data-labels="bay:selector,bay:indicator,bay:context,notes" data-crumb="Following iterations"></div>
+    <div class="beat" data-select="1" data-focus="bay,layer:L3" data-context="bands,nexus" data-energize="model:1,model:2,model:3,model:4,indicator"
+         data-labels="bay:bench,bay:indicator,notes" data-crumb="Periodic benchmark" data-pulse=""></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on the platform</p>
+      <h2>How Do We Choose the Best Model at the Right <em>Time</em>?</h2>
+      <dl class="tiles tiles-plain beats">
+        <div data-beat="0"><dt>First iterations</dt><dd>Spec received → capability used, model picked by hand in the in-house chat assistant or another tool → performance indicator · new Spec or other artefact → fed back into the context</dd></div>
+        <div data-beat="1"><dt>Following iterations</dt><dd>Spec received → capability used → best model proposed from the context → performance indicator · new Spec or other artefact → fed back into the context</dd></div>
+        <div data-beat="2"><dt>Every quarter: a benchmark</dt><dd>An evaluation set drawn from your own capabilities runs against the current models. The gateway's default for each capability changes on that evidence, for quality and for cost.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 16 · Training -->
+  <section id="training" class="stop" data-set="classroom" data-parts="none" data-section="people" data-shot="classroom" data-labels="tiers"
+           data-crumb="Focus on training" data-anchor="screen" data-side="left">
+    <div class="beat"></div>
+    <div class="beat" data-focus="manual,desk" data-context="classroom" data-labels="self-paced" data-crumb="Self-paced learning"></div>
+    <div class="beat" data-focus="capsule,umbilical" data-context="classroom" data-labels="hackathon" data-crumb="A hackathon to practise"></div>
+    <div class="beat" data-focus="board,drawing" data-context="classroom" data-labels="deep-dives" data-crumb="Deep-dive sessions"></div>
+    <div class="beat" data-focus="rocket,model" data-context="classroom" data-labels="specialisation" data-crumb="Specialisation by profile"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on training</p>
+      <h2>A Complete Support Programme, in Several <em>Formats</em></h2>
+      <dl class="tiles beats">
+        <div data-beat="1"><dt>Self-paced learning</dt><dd>Learning paths for each profile, guided by a coach written in markdown. Micro-capsules explain each concept in under ten minutes.</dd></div>
+        <div data-beat="2"><dt>A hackathon to practise</dt><dd>One fictional case runs through the whole PDLC, hands on the new tools and the new processes.</dd></div>
+        <div data-beat="3"><dt>Deep-dive sessions</dt><dd>On key topics, such as token consumption or agent observability.</dd></div>
+        <div data-beat="4"><dt>Specialisation by profile</dt><dd>Aligned with the new responsibilities the new PDLC brings.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 17 · What makes AI pay off (DORA 2025) -->
+  <section id="feedback" class="stop" data-set="mission" data-parts="none" data-section="people" data-shot="mission" data-focus="screen:list" data-context="mission"
+           data-crumb="What makes AI pay off" data-source="DORA 2025" data-anchor="screen" data-side="center">
+    <div class="card card-full card-compact-title">
+      <p class="card-num">What makes AI pay off</p>
+      <h2>Seven Capabilities Decide the <em>Value</em> of AI</h2>
+      <div class="themes">
+        <section><h3>A clear AI stance</h3><p>Everyone knows which tools are allowed, for what, and why</p></section>
+        <section><h3>Healthy data</h3><p>Internal data is accurate, complete and kept up to date</p></section>
+        <section><h3>Data AI can reach</h3><p>The tools read the team's own code, docs and decisions</p></section>
+        <section><h3>Strong version control</h3><p>Every change is versioned, reviewed and easy to roll back</p></section>
+        <section><h3>Small batches</h3><p>Small changes ship often and fail small</p></section>
+        <section><h3>The user at the centre</h3><p>Teams aim AI at what users need, not at output</p></section>
+        <section><h3>A quality platform</h3><p>One shared internal platform carries the gains from team to team</p></section>
+      </div>
+      <p class="bar-note">DORA finds these seven amplify what AI brings to delivery; the programme builds each one.</p>
+      <p class="card-foot">Phase 1 measures where each team stands on the seven.</p>
+    </div>
+  </section>
+
+  <!-- 18 · Over to you #2, in mission control -->
+  <section id="ask-2" class="stop" data-set="mission" data-parts="none" data-section="people" data-shot="mission-console"
+           data-crumb="Over to you" data-anchor="screen" data-side="left">
+    <div class="card card-wide">
+      <p class="card-num">Over to you</p>
+      <h2>Which Questions Are Still <em>Open</em>?</h2>
+      <dl class="tiles tiles-plain">
+        <div><dt>What do you want to ask about the technical building blocks?</dt></div>
+        <div><dt>Which of your questions has this deck left open?</dt></div>
+      </dl>
+      <p class="ask-note">Your questions set the agenda for the next working session.</p>
+    </div>
+  </section>
+
+  <!-- 19 · Engagement -->
+  <section id="engagement" class="stop" data-set="mission" data-parts="none" data-section="people" data-shot="mission-wall" data-focus="screen:site" data-context="mission"
+           data-crumb="Focus on engagement" data-anchor="screen" data-side="left">
+    <div class="beat" data-crumb="Onboarding"></div>
+    <div class="beat" data-crumb="Outputs and outcomes"></div>
+    <div class="card card-wide card-compact-title">
+      <p class="card-num">Focus on engagement</p>
+      <h2>One Site Runs the Whole <em>Programme</em></h2>
+      <dl class="tiles tiles-3 tiles-plain">
+        <div><dt>Activities</dt><dd>Workshops, coaching, sessions</dd></div>
+        <div><dt>Outputs</dt><dd>People onboarded by profile and maturity</dd></div>
+        <div><dt>Outcomes</dt><dd>Delegation and value against the baseline</dd></div>
+      </dl>
+      <figure class="app-shot"><span aria-hidden="true"></span><img src="assets/flight-deck-onboarding.jpg" alt="The programme site: a team's path through the pilot, its training and its capabilities" data-beat="0"><img src="assets/flight-deck-dashboard.jpg" alt="The programme dashboard: activities, outputs and outcomes against the baseline" data-beat="1"></figure>
+    </div>
+  </section>
+
+  <!-- 20 · Next steps -->
+  <section id="next" class="stop" data-set="rocket" data-parts="rocket,moon" data-section="next" data-shot="rocket-flight"
+           data-crumb="Next steps" data-source="Durations: Zenika estimate" data-anchor="screen" data-side="left">
+    <div class="beat" data-crumb="Month 1"></div>
+    <div class="beat" data-crumb="Months 2 and 3"></div>
+    <div class="beat" data-crumb="Next quarter"></div>
+    <div class="card card-plan card-compact-title">
+      <p class="card-num">Next steps</p>
+      <h2>Next <em>Steps</em></h2>
+      <table class="plan beats">
+        <thead><tr><th></th><th data-beat="0">Month 1</th><th data-beat="1">Months 2 and 3</th><th data-beat="2">Next quarter</th></tr></thead>
+        <tbody>
+          <tr><th>PDLC</th><td data-beat="0">Set the gates and the spec templates with a first team</td><td data-beat="1">Run the wheel in every pilot team</td><td data-beat="2">Extend it to the next product teams</td></tr>
+          <tr><th>Platform</th><td data-beat="0">Open the tools and models the pilot needs, with guardrails</td><td data-beat="1">Connect the tools to the teams' own data</td><td data-beat="2">Run it as one platform for every team</td></tr>
+          <tr><th>Measure</th><td data-beat="0">Take the baseline: quality, flow and value</td><td data-beat="1">Read the first results against the baseline</td><td data-beat="2">Decide where to scale, on the evidence</td></tr>
+          <tr><th>People</th><td data-beat="0">Name the roles and start the self-paced paths</td><td data-beat="1">Coach the pilot teams on their own work</td><td data-beat="2">Train the next teams with what the pilot learned</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 21 · Closing -->
+  <section id="thanks" class="stop" data-set="rocket" data-parts="rocket,moon" data-section="next" data-shot="rocket-moon" data-idle
+           data-hud="bare" data-anchor="screen" data-side="left">
+    <div class="card card-hero card-closing">
+      <h1>Fly Your Teams to the AI <em>Moon</em></h1>
+      <dl class="tiles tiles-2 tiles-lit">
+        <div><dt>PDLC</dt><dd>The augmented PDLC in every product team</dd></div>
+        <div><dt>Platform</dt><dd>One platform under the wheel, with guardrails</dd></div>
+        <div><dt>Measure</dt><dd>Quality, flow and value against a baseline</dd></div>
+        <div><dt>People</dt><dd>Roles, skills and training for each person</dd></div>
+      </dl>
+    </div>
+  </section>
+
+</div>
+
+<div class="hud">
+  <button class="hud-theme" type="button" aria-label="Dark theme" aria-pressed="true"></button>
+  <button class="hud-fullscreen" type="button" aria-label="Full screen" aria-pressed="false"></button>
+  <nav class="hud-nav" aria-label="Where we are">
+    <div class="hud-crumb"><span class="crumb-act"></span><span class="crumb-part"></span></div>
+    <ol class="hud-acts" aria-hidden="true"></ol>
+    <ul class="hud-checklist" aria-label="Questions answered so far"></ul>
+  </nav>
+  <div class="hud-logo"><img src="../../brand/zenika/zenika-monogram.png" alt="Zenika"></div>
+  <div class="hud-footer">
+    <span class="hud-source"></span>
+    <span class="hud-meta"><span class="hud-version" aria-hidden="true"></span><span class="hud-counter"></span></span>
+  </div>
+</div>
+
+<footer class="nojs-footer">© ZENIKA 2026 · All Rights Reserved</footer>
+
+<div class="rotate">
+  <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="20" y="6" width="24" height="52" rx="5"/><line x1="29" y1="51" x2="35" y2="51"/></svg>
+  <p>Rotate for the full immersive experience</p>
+</div>
+
+<script src="dist/deck.js"></script>
+</body>
+</html>

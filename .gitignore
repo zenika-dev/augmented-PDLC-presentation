@@ -10,13 +10,13 @@ scratch/
 node_modules/
 
 # Source material: internal or client-confidential, never commit
-assets/source/*.pdf
-assets/source/*.pptx
-assets/source/*.docx
+**/assets/source/*.pdf
+**/assets/source/*.pptx
+**/assets/source/*.docx
 sources/
 
 # Screenshots of internal decks used as references
-assets/source/*.png
+**/assets/source/*.png
 
 # Agent skills under Anthropic's proprietary licence: installed locally, not redistributed
 .agents/skills/pdf/
@@ -29,3 +29,14 @@ editions/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Browser checks: shots, reports, baselines (the repository's and each deck's)
+/qa/
+decks/*/qa/
+
+# The starter deck builds into its own folder
+framework/starter/dist/
+framework/starter/qa/
+
+# Stop maps and board files the deck tools write
+.deck/

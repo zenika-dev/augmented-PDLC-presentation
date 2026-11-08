@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Flight Deck · Instrument panel</title><link rel="stylesheet" href="app.css">
+<style>
+  .dial { display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; }
+  .dial b { font-size: 17px; }
+  .dial span { font-size: 14px; color: var(--muted); }
+  .mix { display:flex; height:14px; border-radius:7px; overflow:hidden; }
+  .mix i:nth-child(1) { background: rgb(242 238 248 / .22); }
+  .mix i:nth-child(2) { background: rgb(242 238 248 / .45); }
+  .mix i:nth-child(3) { background: #ee2238; }
+  .mix i:nth-child(4) { background: #ff9aa5; }
+</style>
+</head>
+<body>
+<div class="scene" style="background-image:url(illu-cockpit.jpg); opacity:.28"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="crumb"><b>Flight Deck <span>› Instrument panel · Team Atlas</span></b><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+    <img class="logo" src="../../../../brand/zenika/zenika-monogram.png" alt="Zenika">
+  </div>
+
+  <div style="display:grid; grid-template-columns: 430px 1fr; gap:24px; margin-top:34px; flex:1; min-height:0">
+    <div style="display:flex; flex-direction:column; gap:18px">
+      <div class="panel">
+        <h3>Team check · results</h3>
+        <div style="display:flex; align-items:end; gap:18px; margin-top:10px">
+          <div class="big">48<small> / 100</small></div>
+          <div style="color:var(--muted); font-size:16px; padding-bottom:6px">overall maturity<br>29 / 29 answered</div>
+        </div>
+        <svg viewBox="-10 -12 400 220" width="100%" style="margin-top:4px; max-height:190px" aria-hidden="true">
+          <g fill="none" stroke="rgb(242 238 248 / .28)">
+            <polygon points="190,10 330,70 330,150 190,195 50,150 50,70"/><polygon points="190,55 260,85 260,135 190,158 120,135 120,85"/>
+          </g>
+          <polygon points="190,40 300,80 272,140 190,150 110,138 92,82" fill="rgb(238 34 56 / .26)" stroke="#ff6b7a" stroke-width="2"/>
+          <g fill="#f2eef8" font-size="12" font-family="Nunito" font-weight="700" text-anchor="middle">
+            <text x="190" y="2">Discover</text><text x="356" y="68">Design</text><text x="356" y="158">Develop</text><text x="190" y="206">Deploy</text><text x="24" y="158">Deepen</text><text x="24" y="68">Drop</text>
+          </g>
+        </svg>
+      </div>
+      <div class="panel">
+        <h3>Autonomy ceiling</h3>
+        <div style="display:flex; height:16px; border-radius:8px; overflow:hidden; margin-top:14px">
+          <i style="flex:25; background:rgb(242 238 248 / .2)"></i><i style="flex:25; background:rgb(242 238 248 / .35)"></i><i style="flex:15; background:#ee2238"></i><i style="flex:35; background:repeating-linear-gradient(45deg, rgb(242 238 248 / .12) 0 4px, transparent 4px 9px)"></i>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px" class="mono"><span>HUMAN</span><span>ASSISTED</span><span>EXECUTED</span><span>AUTONOMOUS</span></div>
+        <p><b style="color:var(--ink)">AI-executed, ceiling 65.</b> Foundations F1, F3 and F5 hold it there.</p>
+      </div>
+      <div class="panel" style="flex:1">
+        <h3>Crew · onboarded by maturity</h3>
+        <div style="display:flex; align-items:baseline; gap:12px; margin-top:10px"><span style="font-size:30px; font-weight:800">84</span><span style="color:var(--muted)">of 96 people in the pilot teams</span></div>
+        <div style="display:flex; height:14px; border-radius:7px; overflow:hidden; margin-top:10px">
+          <i style="flex:22; background:rgb(242 238 248 / .2)"></i><i style="flex:39; background:rgb(242 238 248 / .42)"></i><i style="flex:28; background:#ff9aa5"></i><i style="flex:11; background:#ee2238"></i>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px" class="mono"><span>AWARE</span><span>PRACTISING</span><span>PROFICIENT</span><span>LEADING</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="display:flex; flex-direction:column">
+      <h3>Measures against the baseline · the focus: value</h3>
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:30px 18px; margin-top:30px">
+        <div class="dial"><svg viewBox="0 0 160 110" width="200" aria-hidden="true"><path d="M20 95 A60 60 0 0 1 140 95" fill="none" stroke="rgb(242 238 248 / .25)" stroke-width="10"/><path d="M20 95 A60 60 0 0 1 112 45" fill="none" stroke="#ee2238" stroke-width="10"/><line x1="80" y1="95" x2="114" y2="54" stroke="#f2eef8" stroke-width="3"/><circle cx="80" cy="95" r="6" fill="#f2eef8"/></svg><b>Value</b><span>improving · the focus</span></div>
+        <div class="dial"><svg viewBox="0 0 160 110" width="200" aria-hidden="true"><path d="M20 95 A60 60 0 0 1 140 95" fill="none" stroke="rgb(242 238 248 / .25)" stroke-width="10"/><path d="M20 95 A60 60 0 0 1 98 37" fill="none" stroke="#ff6b7a" stroke-width="10"/><line x1="80" y1="95" x2="98" y2="44" stroke="#f2eef8" stroke-width="3"/><circle cx="80" cy="95" r="6" fill="#f2eef8"/></svg><b>Throughput</b><span>lead time down</span></div>
+        <div class="dial"><svg viewBox="0 0 160 110" width="200" aria-hidden="true"><path d="M20 95 A60 60 0 0 1 140 95" fill="none" stroke="rgb(242 238 248 / .25)" stroke-width="10"/><path d="M20 95 A60 60 0 0 1 80 35" fill="none" stroke="#ff6b7a" stroke-width="10"/><line x1="80" y1="95" x2="80" y2="42" stroke="#f2eef8" stroke-width="3"/><circle cx="80" cy="95" r="6" fill="#f2eef8"/></svg><b>Stability</b><span>holding · fewer failed changes</span></div>
+        <div class="dial"><svg viewBox="0 0 160 110" width="200" aria-hidden="true"><path d="M20 95 A60 60 0 0 1 140 95" fill="none" stroke="rgb(242 238 248 / .25)" stroke-width="10"/><path d="M20 95 A60 60 0 0 1 60 40" fill="none" stroke="rgb(242 238 248 / .7)" stroke-width="10"/><line x1="80" y1="95" x2="58" y2="47" stroke="#f2eef8" stroke-width="3"/><circle cx="80" cy="95" r="6" fill="#f2eef8"/></svg><b>Quality</b><span>watch · gate pass rate</span></div>
+        <div class="dial"><svg viewBox="0 0 160 110" width="200" aria-hidden="true"><path d="M20 95 A60 60 0 0 1 140 95" fill="none" stroke="rgb(242 238 248 / .25)" stroke-width="10"/><path d="M20 95 A60 60 0 0 1 104 40" fill="none" stroke="#ff6b7a" stroke-width="10"/><line x1="80" y1="95" x2="106" y2="48" stroke="#f2eef8" stroke-width="3"/><circle cx="80" cy="95" r="6" fill="#f2eef8"/></svg><b>Transformation</b><span>more workflows run with AI</span></div>
+        <div style="display:flex; flex-direction:column; justify-content:center; gap:10px">
+          <div class="kicker" style="font-size:13px">Next manoeuvres</div>
+          <div style="font-size:16px; font-weight:700; line-height:1.6">Connect the tools to team data<br>Version every Spec<br>Ship in smaller batches</div>
+        </div>
+      </div>
+
+      <div style="margin-top:auto; padding-top:18px; border-top:1px solid var(--glass-line)">
+        <div style="display:flex; justify-content:space-between; align-items:baseline">
+          <h3>Delegation mix · since the baseline</h3>
+          <div style="display:flex; gap:16px" class="mono"><span>HUMAN</span><span>ASSISTED</span><span style="color:#ff6b7a">EXECUTED</span><span style="color:#ffb3bc">AUTONOMOUS</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 110px 1fr; gap:10px 16px; align-items:center; margin-top:14px; font-size:15px; font-weight:700">
+          <span style="color:var(--muted)">Baseline</span><div class="mix"><i style="flex:52"></i><i style="flex:38"></i><i style="flex:10"></i><i style="flex:0"></i></div>
+          <span style="color:var(--muted)">Launch</span><div class="mix"><i style="flex:40"></i><i style="flex:40"></i><i style="flex:20"></i><i style="flex:0"></i></div>
+          <span>Now</span><div class="mix"><i style="flex:26"></i><i style="flex:38"></i><i style="flex:31"></i><i style="flex:5"></i></div>
+        </div>
+      </div>
+      <p style="margin-top:18px">Read per team, never per person. Delegation moves up only when outcomes hold for a full quarter.</p>
+    </div>
+  </div>
+
+  <div class="foot" style="margin-top:18px"><span>© ZENIKA 2026 · All Rights Reserved</span><span class="tag">Example organisation · illustrative data</span></div>
+</div>
+</body>
+</html>

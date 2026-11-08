@@ -1,0 +1,124 @@
+/* Brand tokens: brand/zenika/brand-guidelines.md §1–2 */
+
+/* Cascade layers, first to last: later layers win whatever their selectors' weight. A client edition's
+   theme.css stays outside any layer, so it wins over all of them without raising specificity. A deck's own
+   theme (css/deck.css) goes in the deck layer: after the framework's themes, before the reading version */
+@layer tokens, components, themes, deck, fallback;
+
+@layer tokens {
+  /* Nunito faces live in fonts.css (inlined for file:// use) */
+
+  :root {
+    /* Text size floor (px): keeps text readable on small desktop windows. Phones take a lower one
+       (--fl-phone): the deck scales down as one picture, but no text drops below the size a phone reads */
+    --fl: 1px;
+    --fl-phone: 0.8px;
+
+    /* Core palette */
+    --red: #ee2238;
+    --red-text: #c8102e; /* the red for small text: 4.8:1 on the backdrop's blue end, where --red gives 3.5:1 */
+    --raspberry: #bf1d67;
+    --dark: #1e1e1e;
+    --grey: #5e615f; /* the brand's #747775, deepened: 4.5:1 or more on the tile grey and the backdrop (WCAG AA) */
+    --light-grey: #efefef;
+    --rule-grey: #d9d9d9;
+    --white: #ffffff;
+    --accent-on-dark: #ff6b7a;
+    --footer-on-dark: #b7b7b7;
+    --gradient-fallback: #d81f4d;
+
+    /* Signature gradient and section palettes: always 135°, two stops */
+    --grad-red: linear-gradient(135deg, #ee2238 0%, #bf1d67 100%);
+    /* Deck backdrop: the Zenika slide template, pastel and horizontal (an exception to the 135° rule) */
+    --grad-backdrop: linear-gradient(90deg, #fff6f5 6%, #e3e8fc 100%);
+    /* Closing stop: brand dark towards a raspberry-tinted black, never pure #000 */
+    --grad-dark: linear-gradient(135deg, #1e1e1e 0%, #2b1622 100%);
+
+    /* Type */
+    --font: "Nunito", Arial, sans-serif;
+
+    /* Shape */
+    --radius: 16px;
+
+    /* Theme (surface by default) — switched by body[data-theme] */
+    --bg: var(--white);
+    --fg: var(--dark);
+    --fg-muted: var(--grey); /* the HUD's muted text: 4.5:1 or more on its veil over the backdrop */
+    --accent: var(--red);
+    --halo: rgba(245, 241, 247, 0.9); /* glow behind HUD text that sits on the engine */
+  }
+
+  /* Roles: what the components read. A theme (css/dark.css, a client edition) repaints the deck by setting
+     these on body or body[data-theme=…], not by restyling components. Declared on body, not :root, so the
+     ones built on --fg follow body[data-theme] */
+  body {
+    /* Cards */
+    --ink: var(--dark);              /* body text, lit items */
+    --ink-strong: var(--fg);         /* titles */
+    --ink-muted: var(--grey);        /* numbers, subtitles, lists not yet lit */
+    --emph: var(--red);              /* the red word in titles */
+    --emph-small: var(--red-text);   /* small red text: kickers, the lit item's name */
+    --panel-bg: var(--white);
+    --panel-border: #ffffff;
+    --panel-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --panel-filter: none;            /* backdrop-filter behind the card */
+    --hero-shadow: none;             /* behind the title stops' large name */
+    /* Energy: what the line art paints its energy role with, outside the scene (bar, lit badge, gradients) */
+    --energy: var(--red);
+    --energy-text: var(--red-text);  /* energy as small text or behind white digits (the lit badge): 4.5:1 */
+    --grad-energy: var(--grad-red);
+    /* Keyboard focus ring on the HUD buttons and links (3:1 against what surrounds it) */
+    --focus: var(--fg);
+    /* Engraved names under the napkin drawings */
+    --engraved: var(--grey);
+    --engraved-shadow: 0 1px 0 #ffffff;
+    /* Leader names */
+    --lead-name: #4a4648;
+    --lead-line: #8b8590;
+    --lead-energy: var(--red);       /* line of an energized part or a role */
+    --lead-energy-name: var(--dark); /* its name */
+    --lead-box: rgb(255 255 255 / 0.74);
+    --lead-dot-ring: #ffffff;
+    --lead-kicker: var(--red-text);
+    --lead-note: #4f4b53; /* 4.5:1 or more on the leader box, even over an energized (red) part */
+    /* HUD */
+    --hud-veil: rgb(255 255 255 / 0.55);
+    --crumb: var(--fg);
+    --bar-track: rgb(30 30 30 / 0.14);
+    --bar-fill: var(--grad-energy);
+    --question-now: var(--dark);
+    /* Highlight tiles (.tiles). With beats, the lit tile fills; the others step back to the dim colours, which
+       keep text contrast (4.5:1 on the card): a dim tile is never faded with opacity */
+    --tile-bg: var(--light-grey);
+    --tile-border: transparent;
+    --tile-fg: var(--dark);
+    --tile-muted: var(--grey);
+    --tile-badge-bg: var(--dark);
+    --tile-badge-fg: var(--white);
+    --tile-on-bg: var(--dark);
+    --tile-on-border: var(--dark);
+    --tile-on-fg: var(--white);
+    --tile-on-muted: rgb(255 255 255 / 0.8);
+    --tile-on-badge-bg: var(--energy-text); /* white digits: 5.6:1 (on --red only 3.9:1) */
+    --tile-on-badge-fg: var(--white);
+    --tile-on-emph: var(--accent-on-dark); /* the red words inside the lit (dark) tile */
+    --tile-dim-bg: transparent;
+    --tile-dim-border: var(--rule-grey);
+    --tile-dim-fg: var(--ink-muted);
+  }
+
+  body[data-theme="dark"],
+  body[data-theme="blueprint"],
+  body[data-theme="core"] {
+    --fg: var(--white);
+    --fg-muted: var(--footer-on-dark);
+    --accent: var(--accent-on-dark);
+    --halo: rgba(32, 26, 32, 0.9);
+  }
+
+  body[data-theme="core"] {
+    --accent: var(--white);
+  }
+
+  html.phone { --fl: var(--fl-phone); }
+}
