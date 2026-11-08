@@ -326,7 +326,7 @@ export const FR = {
     },
     {
       id: "people",
-      name: "Les personnes"
+      name: "Équipes"
     },
     {
       id: "next",
@@ -459,7 +459,7 @@ export const FR = {
       "le cockpit"
     ],
     "pillar:people": [
-      "Les personnes",
+      "Équipes",
       "la trappe de l'équipage"
     ],
     "part:line": [

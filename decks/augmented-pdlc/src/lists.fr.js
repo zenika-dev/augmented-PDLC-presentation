@@ -37,6 +37,6 @@ export const FR = {
   },
   sections: {
     problem: "Le problème", wheel: "La roue", nexus: "Le Nexus", layers: "Les couches",
-    people: "Les personnes", measure: "Mesure", napkin: "La serviette",
+    people: "Les équipes", measure: "Mesure", napkin: "La serviette",
   },
 };

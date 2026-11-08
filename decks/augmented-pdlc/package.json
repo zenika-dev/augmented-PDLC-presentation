@@ -1,7 +1,7 @@
 {
   "name": "augmented-pdlc",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The augmented PDLC: Zenika's point of view on AI across the Product Delivery Life Cycle, an executive keynote",
   "type": "module",
   "scripts": {

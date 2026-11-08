@@ -18,7 +18,7 @@ Canvas: none (the deck predates the board stage).
 ## Decisions
 
 - The HUD's questions are off: DORA 2025's seven AI capabilities have their own stop (17).
-- Own words only (2026-11-08): the four pillars take the keynote's names (PDLC, Platform, Measure, People; FR: PDLC, Platform, Mesure, Les personnes); step 17 shows DORA 2025's seven AI capabilities (source in the HUD); step 20's plan runs by pillar, in our own wording. Step 3's findings and target use the keynote's terms; step 7's cockpit and step 19's dashboard show DORA's Stability and Throughput plus the keynote's Quality, Transformation and Value; step 2's Phase 1 checks where each team stands on the seven capabilities.
+- Own words only (2026-11-08): the four pillars take the keynote's names (PDLC, Platform, Measure, People; FR: PDLC, Platform, Mesure, Équipes); step 17 shows DORA 2025's seven AI capabilities (source in the HUD); step 20's plan runs by pillar, in our own wording. Step 3's findings and target use the keynote's terms; step 7's cockpit and step 19's dashboard show DORA's Stability and Throughput plus the keynote's Quality, Transformation and Value; step 2's Phase 1 checks where each team stands on the seven capabilities.
 - The contract dial shows the four delegation levels, not the keynote's three zones.
 - The outcome: a leadership team knows what the programme asks of it and can decide whether to launch the pilot quarter. The audience: the executives who sponsor it and the leaders who run it, in one room. About 90 minutes, workshops included (2026-11-08).
 - Steps 2 and 4 keep their statement titles, in title case like every English title (2026-11-08).

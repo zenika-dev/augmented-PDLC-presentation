@@ -17,6 +17,7 @@ Canvas: none (the deck predates the board stage).
 
 ## Decisions
 
+- FR section `people` reads « Les équipes » (2026-11-08, user); the prose keeps « personnes » where it means individuals.
 - Step 5 pins its gate names by hand (`data-lead-at`, `data-lead-at-phone`): on desktop G5 top left, G6 top right, G4 above the card; on phones G5 above G4 on the left.
 - Step 10 tilts the other way: card bottom left, names in a right-hand column; 10.2 reveals the answer paragraph and lights L2, L5 and L8 with their names.
 - Step 13's roles: two groups, "in each team" and "for all teams", and the tech lead's 0.7 FTE, labelled as a Zenika estimate.

@@ -1,7 +1,7 @@
 {
   "name": "programme-rollout",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Launch the AI Native Factory: rolling out the augmented PDLC as a transformation programme, in three phases and four pillars",
   "type": "module",
   "scripts": {
