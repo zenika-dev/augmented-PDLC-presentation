@@ -35,6 +35,9 @@ export function createCards(container, onResize) {
     const card = stop.card;
     if (!card) return;
     card.classList.add(`card-${stop.data.side || "right"}`);
+    // Each tile's number, written once: on a phone a beat list shows its lit tile alone, and a hidden tile does
+    // not count in the CSS counter (framework/css/components.css)
+    card.querySelectorAll(".tiles > *").forEach((tile, i) => (tile.dataset.n = i + 1));
     container.appendChild(card);
     watch.observe(card);
     cards.push(card);

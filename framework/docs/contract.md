@@ -84,7 +84,7 @@ Role tokens (`framework/css/tokens.css` lists them: `--ink`, `--panel-*`, `--lea
 - A deck writes its theme in `@layer deck`: the light one on `body:not([data-theme="dark"])`, so the reading version (no scripts: no theme on the body) and the printed page show it; the dark one on `body[data-theme="dark"]`, which sets `--fg-muted` too (the HUD's muted text).
 - The energy colour outside the scene: `--energy` and `--grad-energy` (the bar, the crumb's dot, the lit tile's number).
 - `--focus`: the keyboard focus ring (3:1 at least against the backdrop). `--halo`: the glow behind HUD text and engraved names, in the backdrop's colour.
-- Tiles: `--tile-*` on the body; the tiles a beat does not light step back to `--tile-dim-bg`, `--tile-dim-border`, `--tile-dim-fg` (never opacity: their text keeps 4.5:1).
+- Tiles: `--tile-*` on the body; the tiles a beat does not light step back to `--tile-dim-bg`, `--tile-dim-border`, `--tile-dim-fg` (never opacity: their text keeps 4.5:1). Tiles are numbered by a CSS counter; on a phone a beat list shows its lit tile alone and the number comes from `data-n`, which `framework/core/cards.js` writes on each tile.
 - `--fl-phone` (`:root`, 0.8px by default): the text floor's unit on a phone, so no text drops under the size a phone reads; 0px scales the phone as one picture.
 - `.off-phone` on an element of a card: hidden in the deck on a phone, where the card cannot grow, and kept in the reading version and on wider screens. For text the scene already tells there (the names on the drawing), never for what the card alone says.
 

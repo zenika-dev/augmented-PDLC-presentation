@@ -477,6 +477,8 @@
 
   /* Phones: no room for the whole list, so a lit tile shows alone */
   html.phone .tiles.beats:has(.is-now) > :not(.is-now) { display: none; }
+  /* The hidden tiles drop out of the counter: the lit tile takes its own number, written by framework/core/cards.js */
+  html.phone .tiles.beats > [data-n]::before { content: attr(data-n); }
   html.phone .tiles.beats:not(:has(.is-now)) dd { display: none; }
 
 

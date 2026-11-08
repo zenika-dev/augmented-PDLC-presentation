@@ -6,6 +6,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { extname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { ICONS } from "../core/icons.js";
 
 const args = process.argv.slice(2);
 const arg = (name, fallback) => (args.includes(`--${name}`) ? args[args.indexOf(`--${name}`) + 1] : fallback);
@@ -42,11 +43,19 @@ for (const folder of folders) {
   decks.push({ name, description: meta.description || "", version: meta.version, pages });
 }
 
+// The page is in English: the download buttons name each language in English
+const english = new Intl.DisplayNames(["en"], { type: "language" });
+const download = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="${ICONS.download}"/></svg>`;
 const image = logo ? `<img src="data:${MIME[extname(logo)]};base64,${readFileSync(logo).toString("base64")}" alt="">` : "";
 const items = decks
   .map((d) => {
     const links = d.pages
-      .map((p) => `<a href="${escape(relative(join(root, "dist"), p.file).split("\\").join("/"))}" hreflang="${p.lang}">${LANGS[p.lang] || p.lang}</a>`)
+      .map((p) => {
+        const href = escape(relative(join(root, "dist"), p.file).split("\\").join("/"));
+        const lang = LANGS[p.lang] || p.lang;
+        // The open link, and in front of it the same file to save: one self-contained HTML file
+        return `<span class="page"><a class="dl" href="${href}" download aria-label="Download the ${english.of(p.lang)} version (one self-contained HTML file)" title="Download (one self-contained HTML file)">${download}</a><a href="${href}" hreflang="${p.lang}">${lang}</a></span>`;
+      })
       .join("");
     const version = d.version ? `<span class="version">v${escape(d.version.split(".").filter((n, i) => i < 2 || n !== "0").join("."))}</span>` : "";
     return `<li><h2>${escape(d.name)} ${version}</h2><p>${escape(d.description)}</p><nav>${links}</nav></li>`;
@@ -77,6 +86,10 @@ ${fonts}
     nav { display: flex; gap: 16px; flex-wrap: wrap; }
     a { color: var(--link); font-weight: 700; text-underline-offset: 3px; }
     a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    .page { display: inline-flex; align-items: center; gap: 6px; }
+    .dl { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; }
+    .dl:hover, .dl:focus-visible { background: var(--rule); }
+    .dl svg { width: 22px; height: 22px; }
   </style>
 </head>
 <body>
